@@ -2,7 +2,7 @@
 
 ## Team Members
 
-- TinyuxieUSC
+- tinyuxieUSC
 - giselleluk
 - leynanguyen0818
 - gigizhuwq
