@@ -1,35 +1,33 @@
-# Team Project Vision: Client Metadata Outreach Prioritizer
+# 00 Vision — Client Metadata Outreach Prioritizer
 
-## Who is this for, and what decision does it support?
+## User and decision
 
-Our project is a **Client Metadata Outreach Prioritizer** for a project lead at the MetaBrainz Foundation. ListenBrainz receives listening records from different music players, apps, and scrobbling clients. Some records include a MusicBrainz recording identifier (MBID), while many do not. Missing identifiers make it harder to reliably connect listens to the correct recordings.
+A MetaBrainz Foundation project lead preparing a quarterly outreach pilot needs to decide **which active ListenBrainz client maintainer to contact first** about improving submission of MusicBrainz recording identifiers (MBIDs). The tool supports a human outreach decision; it does not contact maintainers automatically.
 
-The tool will help a project lead decide **which client maintainers to contact first** about improving recording MBID submissions. This decision matters when planning outreach because staff and engineering time are limited. The dashboard will recommend candidates for investigation, not automatically decide which developers should be contacted.
+## Why this is useful
 
-## What will the user see and do?
+A recording MBID identifies a specific recording more reliably than artist and track text alone. Today, a project lead would have to inspect listening-data exports, group records by the software that submitted them, distinguish active listening clients from historical importers, and manually compare results. Ranking clients only by listen volume can overvalue a few heavy users or bulk imports; ranking only by missing-ID percentage can overvalue tiny clients.
 
-We plan to build a Streamlit dashboard with three main views:
+The **Client Metadata Outreach Prioritizer** makes the trade-offs visible in one Streamlit app: a ranked shortlist, a closer look at a selected client, and a comparison of potential improvement scenarios. It helps the lead select a promising pilot partner based on evidence rather than a single raw count.
 
-1. **Priority Table:** Rank clients using missing recording MBIDs, number of affected accounts, existing MBID coverage, and available evidence about outreach feasibility. Users can filter by playback dates, exclude bulk importers, set a minimum account count, and adjust the importance of each ranking factor.
-2. **Client Detail:** Select a client to see its listening volume, MBID coverage, affected accounts, available client-version breakdown, and the factors behind its ranking.
-3. **Scenario Comparison:** Compare possible outreach targets and estimate how many additional listens might contain recording MBIDs if coverage improves to a selected target. These estimates will be labeled as scenarios, not guaranteed outcomes.
+## What the user cares about
 
-For example, a project lead could exclude historical import tools, focus on clients with at least 100 observed accounts, and give more weight to account reach than total listening volume. After comparing the leading candidates, the lead could export a short summary to guide a conversation with a client maintainer.
+- **Reach:** how many distinct accounts could benefit, not just how many listens a client submits.
+- **Opportunity:** how many listens lack a recording MBID, alongside the client's current MBID coverage.
+- **Relevance:** separating regular submission clients from bulk importers, and showing the observation period.
+- **Transparency:** seeing how rankings and estimates were calculated, including uncertain or missing evidence.
+- **Practical action:** selecting a small number of clients for further research without exposing individual user identities.
 
-## Why is this useful?
+## Concrete use cases
 
-Today, comparing clients can require separate queries, manual checks, and research into the software behind each submission. Simply choosing the client with the most missing IDs may be misleading: a bulk importer or a few highly active accounts could dominate the counts. Choosing only the lowest coverage percentage could also put very small clients at the top.
+1. **Build a pilot shortlist.** The lead selects a playback-date range, excludes bulk importers, and sets a minimum distinct-account count. The tool shows a ranked table with each client's total listens, accounts, affected accounts, missing-MBID listens, and current coverage. The lead chooses two or three maintainers to investigate.
 
-Our dashboard will bring the evidence together and make the tradeoffs visible. It will help the user identify clients where better metadata could benefit many listens and accounts, while still considering whether outreach seems practical.
+2. **Check a candidate's data quality.** The lead selects a client from the shortlist. The tool shows its metrics, available client-version breakdown, and the assumptions behind its ranking. The lead decides whether the missing-ID opportunity is broad enough to justify contacting its maintainer.
 
-## What data will we use?
+3. **Compare competing priorities.** The lead adjusts the emphasis on affected-account reach versus missing-MBID volume and compares two candidates. The tool shows how rankings change and estimates additional MBID-tagged listens under a user-selected coverage target. The lead chooses which pilot is more attractive, understanding that the estimate is a scenario rather than a guaranteed result.
 
-We will use the public ListenBrainz listening-history dumps and the supplied metadata sample. Useful fields include listening timestamps, account identifiers, submission client names and versions, and recording MBIDs. With pandas, we can calculate listening counts, distinct affected accounts, missing-ID rates, and coverage by client. We may supplement this with manually verified public repository information to assess whether a client has an identifiable maintainer or contribution path.
+4. **Prepare for outreach.** After choosing a candidate, the lead reviews and exports a short aggregate-data briefing containing the client's metrics, selected settings, and assumptions. The lead uses it for a human review and decides whether to begin a pilot conversation.
 
-The data does **not** tell us why an MBID is missing, whether a maintainer will respond, or the actual engineering effort required. We will therefore show unknown information clearly and avoid presenting the ranking as proof that any client caused the problem.
+## Boundaries
 
-## What does success look like?
-
-A successful prototype will let a project lead move from raw listening records to a clear shortlist of outreach candidates, understand why each client ranks where it does, compare at least two candidates, and explain the recommendation using visible evidence. We will use aggregated account counts rather than exposing individual user handles. The initial version can use the provided sample and a daily dump, with the possibility of expanding to multiple days to make the ranking more stable.
-
-Our goal is a practical, transparent decision-support tool—not another general music listening dashboard.
+The tool analyzes observed ListenBrainz data, not the full population of client users. A missing MBID does not prove that the submitting client caused the problem. Rankings and scenario estimates are **screening aids**, not causal findings, guarantees of improvement, or automated outreach decisions. Identifiable listener-level data is never shown in the interface or exports.
