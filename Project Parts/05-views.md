@@ -5,6 +5,49 @@ client maintainer to approach first. All views use aggregate data. They must
 never display `user_id`, `user_name`, individual listens, or any other
 listener-level identifier.
 
+## Job and contract
+
+This piece turns filtered aggregate client metrics into the four screens that
+support the outreach decision. Views do not read CSV, Parquet, or raw JSON
+files, and they do not calculate listener-level data. They receive aggregate
+data plus plain settings and return a rendered view. A table-row or chart click
+returns only a selected client name to the shared dashboard state.
+
+| View | Receives | Returns/displays |
+|---|---|---|
+| Shortlist | One aggregate row per client plus date range, importer rule, minimum-account threshold, and ranking weights | Ranked table, reach/opportunity scatter plot, and optional selected client |
+| Client detail | One selected client, its aggregate metrics, optional weekly aggregates, and optional version aggregates | Metric cards, coverage chart, trend chart, version table, and limitations |
+| Scenario comparison | Two or three selected client summaries plus a target coverage percentage | Scenario chart, comparison table, and assumptions |
+| Briefing/export | Selected client summary, active settings, scenario results, and warnings | Aggregate briefing on screen and downloadable CSV or Markdown/HTML |
+
+The dashboard owns navigation and shared selection. A view knows only its own
+input contract and display; it does not access another view's internals.
+
+## Shared definitions
+
+The data unit is one submitted listen. The analysis period is the selected
+`listened_at_utc` playback-date range, not the daily dump's submission date.
+The view layer uses these aggregate definitions:
+
+| Measure | Definition |
+|---|---|
+| Total listens | Number of filtered listen rows for a client. |
+| Distinct accounts | Distinct observed `user_id` values for a client; the ID is counted internally and never displayed. |
+| Affected accounts | Distinct accounts with at least one listen missing a recording MBID. |
+| Missing-MBID listens | Filtered listen rows without a recording MBID. |
+| Recording-MBID coverage | Listens with a recording MBID divided by total listens. |
+| Priority score | The shared ranking calculation using the selected reach and missing-listen weights; show the active weights. |
+| Scenario estimate | `min(missing_MBID_listens, max(0, target_coverage × total_listens − tagged_listens))`. |
+
+Counts are whole numbers and rates are percentages with one decimal place.
+Blank or uncertain values appear as `Unknown` or `Not available`, never as
+silently converted zeros. Bulk importers are labeled and can be excluded.
+Every result shows its active period and methodology settings.
+
+The **Shortlist** tab is the initial screen because it answers the first
+decision: which client should the lead investigate? If no client passes the
+filters, show the active filters and an explanatory empty state.
+
 ## Shared view rules
 
 - The observation period is shown above every result. It is based on the
@@ -191,3 +234,36 @@ ranking weights, and scenario target. Use tabs for:
 Changing a sidebar setting recomputes all views using the same filtered data.
 Selecting a client changes the detail, scenario, and briefing views without
 reading or displaying listener-level data.
+
+## Design choices and reasons
+
+- **Aggregate inputs only:** protects listener privacy and keeps rendering fast
+  after loading and aggregation are complete.
+- **Table plus scatter plot:** the table supports an exact shortlist while the
+  chart makes the reach-versus-opportunity trade-off visible.
+- **Separate detail and scenario views:** the lead can inspect observed
+  evidence before interpreting a hypothetical target as a scenario.
+- **Settings shown with every result:** rankings depend on date range, imports,
+  thresholds, and weights, so results remain auditable when exported.
+- **Aggregate export only:** supports outreach preparation without exposing
+  listener-level information.
+
+## Done-when checks
+
+1. On a tiny invented table with two clients, shortlist totals, distinct
+   accounts, affected accounts, missing-MBID listens, and coverage match
+   independently calculated values.
+2. A client with no recording MBIDs shows 0% coverage without a divide-by-zero
+   error. No matching clients produces an explanatory empty state.
+3. Excluding a bulk importer removes it from both the table and scatter plot,
+   while the importer setting remains visible.
+4. Clicking a shortlist row updates the detail tab to that client and does not
+   display another client's metrics.
+5. For 100 total listens, 20 tagged listens, 80 missing listens, and a 75%
+   target, the scenario estimate is 55 (`75 - 20`) and never exceeds 80.
+6. A missing week is displayed as missing rather than connected by an invented
+   trend, and unavailable version data appears as `Unknown`.
+7. An exported briefing contains aggregate metrics and settings but no
+   `user_id`, `user_name`, track, or raw-listen column.
+8. With no selected client, the detail, scenario, and briefing views explain
+   what the user must select instead of crashing or showing stale results.
