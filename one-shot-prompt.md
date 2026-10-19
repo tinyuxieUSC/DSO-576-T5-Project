@@ -189,7 +189,14 @@ regular_clients = ["navidrome", "Pano Scrobbler", "Web Scrobbler", "ListenBrainz
 
 Canonicalize mapping keys with the same trim/case-fold rules. Seed classifications above are supported by the dataset overview's client table and sample labels; record that evidence in generated config comments/README. Other labels, including `ArchiveTune`, remain unknown pending review. The editable account floor reduces tiny-count displays; it is not an anonymity guarantee. An empty alias map is intentional.
 
-Before startup, validate existing completed cache/mode, date bounds, integral nonnegative minimum accounts, positive floor/chunk size/memory budget, disjoint classification sets, and fraction weights/targets. Reject bad config clearly rather than silently repairing it. Resolve `observed_bounds` from accepted playback dates; disclose historical/future-date warnings. No client is selected initially.
+Before startup, validate the configuration and report specific, actionable errors:
+
+- Check that the selected dataset mode matches an existing completed cache. If the cache is missing, identify the mode and provide the preparation command. Never switch modes automatically.
+- Validate date bounds and resolve `observed_bounds` from accepted playback dates. Explain invalid date ranges and disclose historical or future-date warnings.
+- Require minimum accounts to be a nonnegative integer, and the account floor, chunk size, and memory budget to be positive integers.
+- Require reach weight and target coverage to be between 0 and 1. Ensure importer and regular-client classification sets do not overlap.
+- For each validation error, identify the setting name, invalid value, expected range, and suggested correction. Never silently repair invalid settings.
+- Start with no client selected. If valid filters return no eligible clients, show a clear empty-state message rather than a startup error.
 
 Supply and verify these commands from the application directory after generating the files:
 
