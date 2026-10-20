@@ -246,6 +246,15 @@ No selection shows instructions, not stale metrics. Fewer than two comparison cl
 
 Build in order: data rules/adapters → preparation/report → streamed aggregate queries → scoring/scenarios → configuration/startup → views/export. Run relevant checks at each boundary. Do not claim measured performance or full-data results before running them.
 
+| Build boundary | Gate before moving to the next stage |
+|---|---|
+| Data rules/adapters | Equivalent raw/CSV events produce the same canonical values; malformed and edge-case inputs follow the expected acceptance/rejection rules (check 1). |
+| Preparation/report | Accepted, rejected, and duplicate-file counts reconcile with the physical inputs (check 4). |
+| Streamed aggregate queries | The January fixture returns the expected alpha/beta totals and exact distinct-account counts; chunk-size and cross-fragment checks pass (check 2). |
+| Scoring/scenarios | Fixture rankings, sensitivity order, and target additions match the expected results above. |
+| Configuration/startup | Invalid settings and missing or mismatched caches produce actionable errors without silently switching modes (check 7). |
+| Views/export | Fixture values, selection/empty states, and the export whitelist are verified (check 6). |
+
 Use this internal grouped fixture; keys below stand for test HMAC values. All unusable-ID counts in this fixture are absent IDs; invalid counts are zero. Set the test account floor to 1.
 
 | Account | Client | Version | UTC play date | Listens | Unusable IDs | Type |
