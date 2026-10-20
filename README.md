@@ -8,8 +8,7 @@ From this repository folder:
 
 ```bash
 cd outreach-app
-source .venv/bin/activate
-python -m streamlit run app.py -- --config config.toml
+uv run streamlit run app.py
 ```
 
 Open http://localhost:8501. Press **Control+C** in Terminal to stop the app.
