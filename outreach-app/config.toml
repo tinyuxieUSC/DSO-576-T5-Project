@@ -1,0 +1,30 @@
+[paths]
+dataset_root = "../../dataset_listenbrainz"
+prepared_root = "data/prepared"
+secret_file = ".local/account-key.secret"
+sample_input = "sample/listens_20260904.csv"
+full_inputs = ["data/listenbrainz-listens-dump-2657-20260910-000003-incremental/listens/2026/9.listens"]
+
+[preparation]
+mode = "sample"
+chunk_size = 10000
+rules_version = "1"
+
+[defaults]
+initial_tab = "Shortlist"
+date_range = "observed_bounds"
+exclude_importers = true
+minimum_accounts = 100
+minimum_accounts_floor = 5
+reach_weight = 0.5
+target_coverage = 0.75
+shortlist_size = 10
+query_memory_budget_mb = 1024
+
+# Evidence: dataset overview client table and sample labels. Unlisted names
+# stay unknown; substring matches only generate review suggestions.
+[classification]
+importers = ["ListenBrainz lastfm importer v2", "ListenBrainz Archive Importer", "Takeout Importer Script", "Node-RED Plex Import", "https://github.com/BlakeAlvarez/YTMusic-ListenBrainz-Importer"]
+regular_clients = ["navidrome", "Pano Scrobbler", "Web Scrobbler", "ListenBrainz Android", "Roon"]
+
+[aliases]

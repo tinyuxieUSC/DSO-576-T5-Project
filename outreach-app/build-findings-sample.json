@@ -1,0 +1,68 @@
+{
+  "fingerprint": "d3339cdc535422b49f6a5784ec8e096c1df06027c17b9ed49aea627601debd10",
+  "source_sha256": [
+    "0efdc64b6ba91b603eb412e2012a95fe14aa84b46b08ccd6e22a29e512289b35"
+  ],
+  "preparation": {
+    "accepted": 21276,
+    "rejected": 0,
+    "preparation_seconds": 3.665335707999475,
+    "compaction_seconds": 1.2509340000033262,
+    "peak_rss_mb": 143.890625,
+    "input_records": [
+      {
+        "file": "listens_20260904.csv",
+        "parsed_records": 21276,
+        "physical_lines": 21278,
+        "accepted": 21276,
+        "rejected": 0
+      }
+    ],
+    "quality": {
+      "valid_mbid_listens": 654,
+      "missing_mbid_listens": 20622,
+      "invalid_mbid_listens": 0,
+      "unknown_account_listens": 0,
+      "unknown_version_listens": 18814,
+      "unreported_client_listens": 847,
+      "future_playback_events": 0
+    }
+  },
+  "benchmark": {
+    "all_dates_importers_included_seconds": [
+      0.70544279099704,
+      0.6755934999964666,
+      0.6702577090036357
+    ],
+    "importers_excluded_seconds": 0.3012066670053173,
+    "aggregate_cache_hit_seconds": 2.3750035325065255e-06,
+    "query_peak_rss_mb": 145.390625,
+    "query_process_budget_mb": 1024,
+    "cache_conditions": "OS caches not flushed; query-result cache disabled except explicit cache-hit measurement",
+    "prepared_files": 250,
+    "prepared_bytes": 1901988
+  },
+  "audit": {
+    "events": 21276,
+    "distinct_accounts": 4060,
+    "valid_mbid_listens": 654,
+    "all_client_measures_match_independent_raw_count": true
+  },
+  "environment": {
+    "platform": "macOS-26.6.2-arm64-arm-64bit-Mach-O",
+    "python": "3.14.7",
+    "dependencies": {
+      "pandas": "3.0.6",
+      "pyarrow": "25.0.1",
+      "streamlit": "1.66.0",
+      "altair": "6.3.0",
+      "psutil": "7.2.2",
+      "pytest": "9.1.1"
+    }
+  },
+  "ui_reruns_seconds": {
+    "reach_weight": 0.07556487499823561,
+    "target_coverage": 0.0718574999991688
+  },
+  "ui_measurement_method": "Streamlit AppTest full-script rerun after warming base/version/week aggregate caches; not browser/network latency. OS caches and other machine activity not controlled."
+}

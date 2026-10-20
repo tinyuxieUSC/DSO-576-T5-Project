@@ -1,5 +1,20 @@
 # DSO-576-T5 Project
 
+## Run the dashboard
+
+All app code, configuration, tests, and build reports are in [`outreach-app/`](outreach-app/). See the [app README](outreach-app/README.md) for terminal setup, sample/full data commands, and troubleshooting.
+
+From this repository folder:
+
+```bash
+cd outreach-app
+source .venv/bin/activate
+python -m streamlit run app.py -- --config config.toml
+```
+
+Open http://localhost:8501. Press **Control+C** in Terminal to stop the app.
+
+
 ## Team Members
 
 - tinyuxieUSC

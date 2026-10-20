@@ -1,0 +1,100 @@
+{
+  "fingerprint": "c34ba377bce92bcfb7253dbd22ae2e3da90544e4a0ddf57661dbf17d272fdf15",
+  "source_sha256": [
+    "8ee6665ea88f985052d76eb6eecd5d7c85d68afe6b399f0e4f473897cdfbcb48"
+  ],
+  "preparation": {
+    "accepted": 6780931,
+    "rejected": 0,
+    "preparation_seconds": 112.17067308300466,
+    "compaction_seconds": 8.419055166006729,
+    "peak_rss_mb": 256.90625,
+    "input_records": [
+      {
+        "file": "9.listens",
+        "parsed_records": 6780931,
+        "physical_lines": 6780931,
+        "accepted": 6780931,
+        "rejected": 0
+      }
+    ],
+    "quality": {
+      "valid_mbid_listens": 138996,
+      "missing_mbid_listens": 6641935,
+      "invalid_mbid_listens": 0,
+      "unknown_account_listens": 0,
+      "unknown_version_listens": 6253926,
+      "unreported_client_listens": 181285,
+      "future_playback_events": 20
+    }
+  },
+  "benchmark": {
+    "all_dates_importers_included_seconds": [
+      1.2405625409955974,
+      1.1937383749973378,
+      1.195944833001704
+    ],
+    "importers_excluded_seconds": 0.7340295419999165,
+    "aggregate_cache_hit_seconds": 2.167005732189864e-06,
+    "query_peak_rss_mb": 236.5625,
+    "query_process_budget_mb": 1024,
+    "cache_conditions": "OS caches not flushed; query-result cache disabled except explicit cache-hit measurement",
+    "prepared_files": 262,
+    "prepared_bytes": 4860107
+  },
+  "audit": {
+    "events": 6780931,
+    "distinct_accounts": 23382,
+    "valid_mbid_listens": 138996,
+    "all_client_measures_match_independent_raw_count": true
+  },
+  "layout": {
+    "input_events": 6780,
+    "input_sha256": "bc8d94624bdbce11dab933a4af3e507e3465373c1fa1705c917524df5387288a",
+    "input_bytes": 3951744,
+    "sampling": "Every 1000th physical line from full JSONL; isolated validation cache",
+    "exact_all_client_version_weekly_and_date_boundary_equality": true,
+    "independent_raw_audit": {
+      "events": 6780,
+      "distinct_accounts": 1192,
+      "valid_mbid_listens": 122,
+      "all_client_measures_match_independent_raw_count": true
+    },
+    "date_per_chunk_files": 4816,
+    "compacted_month_files": 259,
+    "date_per_chunk_bytes": 30945861,
+    "compacted_month_bytes": 1809903,
+    "date_per_chunk_preparation_seconds": 3.6889500000033877,
+    "compacted_month_preparation_seconds": 3.155970833002357,
+    "compaction_seconds": 1.4704380830007722,
+    "compacted_preparation_peak_rss_mb": 256.015625,
+    "query_seconds": {
+      "date_per_chunk": [
+        6.495565750003152,
+        6.47734374999709
+      ],
+      "compacted_month": [
+        0.5330292919970816,
+        0.5360718750016531
+      ]
+    },
+    "os_caches": "Not flushed. Layouts measured sequentially; no full-size extrapolation."
+  },
+  "environment": {
+    "platform": "macOS-26.6.2-arm64-arm-64bit-Mach-O",
+    "python": "3.14.7",
+    "dependencies": {
+      "pandas": "3.0.6",
+      "pyarrow": "25.0.1",
+      "streamlit": "1.66.0",
+      "altair": "6.3.0",
+      "psutil": "7.2.2",
+      "pytest": "9.1.1"
+    }
+  },
+  "ui_reruns_seconds": {
+    "reach_weight": 0.0736624999990454,
+    "target_coverage": 0.07307937500445405
+  },
+  "ui_measurement_method": "Streamlit AppTest full-script rerun after warming base/version/week aggregate caches; not browser/network latency. OS caches and other machine activity not controlled."
+}
