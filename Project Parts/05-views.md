@@ -267,3 +267,117 @@ reading or displaying listener-level data.
    `user_id`, `user_name`, track, or raw-listen column.
 8. With no selected client, the detail, scenario, and briefing views explain
    what the user must select instead of crashing or showing stale results.
+
+---
+
+# Individual Design Analysis — Module 8
+
+## Part 1. The vision (handout 8.3)
+
+The following is the team's vision from `00-vision.md`.
+
+> # 00 Vision — Client Metadata Outreach Prioritizer
+>
+> ## User and decision
+>
+> A MetaBrainz Foundation project lead preparing a quarterly outreach pilot needs to decide **which active ListenBrainz client maintainer to contact first** about improving submission of MusicBrainz recording identifiers (MBIDs). The tool supports a human outreach decision; it does not contact maintainers automatically.
+>
+> ## Why this is useful
+>
+> A recording MBID identifies a specific recording more reliably than artist and track text alone. Today, a project lead would have to inspect listening-data exports, group records by the software that submitted them, distinguish active listening clients from historical importers, and manually compare results. Ranking clients only by listen volume can overvalue a few heavy users or bulk imports; ranking only by missing-ID percentage can overvalue tiny clients.
+>
+> The **Client Metadata Outreach Prioritizer** makes the trade-offs visible in one Streamlit app: a ranked shortlist, a closer look at a selected client, and a comparison of potential improvement scenarios. It helps the lead select a promising pilot partner based on evidence rather than a single raw count.
+>
+> ## What the user cares about
+>
+> - **Reach:** how many distinct accounts could benefit, not just how many listens a client submits.
+> - **Opportunity:** how many listens lack a recording MBID, alongside the client's current MBID coverage.
+> - **Relevance:** separating regular submission clients from bulk importers, and showing the observation period.
+> - **Transparency:** seeing how rankings and estimates were calculated, including uncertain or missing evidence.
+> - **Practical action:** selecting a small number of clients for further research without exposing individual user identities.
+>
+> ## Concrete use cases
+>
+> 1. **Build a pilot shortlist.** The lead selects a playback-date range, excludes bulk importers, and sets a minimum distinct-account count. The tool shows a ranked table with each client's total listens, accounts, affected accounts, missing-MBID listens, and current coverage. The lead chooses two or three maintainers to investigate.
+>
+> 2. **Check a candidate's data quality.** The lead selects a client from the shortlist. The tool shows its metrics, available client-version breakdown, and the assumptions behind its ranking. The lead decides whether the missing-ID opportunity is broad enough to justify contacting its maintainer.
+>
+> 3. **Compare competing priorities.** The lead adjusts the emphasis on affected-account reach versus missing-MBID volume and compares two candidates. The tool shows how rankings change and estimates additional MBID-tagged listens under a user-selected coverage target. The lead chooses which pilot is more attractive, understanding that the estimate is a scenario rather than a guaranteed result.
+>
+> 4. **Prepare for outreach.** After choosing a candidate, the lead reviews and exports a short aggregate-data briefing containing the client's metrics, selected settings, and assumptions. The lead uses it for a human review and decides whether to begin a pilot conversation.
+>
+> ## Boundaries
+>
+> The tool analyzes observed ListenBrainz data, not the full population of client users. A missing MBID does not prove that the submitting client caused the problem. Rankings and scenario estimates are **screening aids**, not causal findings, guarantees of improvement, or automated outreach decisions. Identifiable listener-level data is never shown in the interface or exports.
+
+## Part 2. My design analysis (handout 8.3)
+
+These answers address the four design questions in the Module 8.3 analysis template and the open questions for this project, with emphasis on my assigned `05-views.md` responsibility: charts, tables, visual design, and interactions.
+
+### 2a. Clear pieces
+
+The design has five pieces with separate responsibilities and explicit inputs/outputs:
+
+- **Data rules** receives raw field values and policy; returns canonical cleaned values and statuses.
+- **Loader/preparation** receives configuration and source paths or a prepared-data handle plus filters; it reads the listening data and returns a prepared handle, aggregate DataFrames, and data status.
+- **Filters/scoring** receives internal grouped batches or aggregate client metrics and settings; returns filtered aggregates, ranks, sensitivity results, and scenarios without file or Streamlit access.
+- **Views** receives aggregate tables plus settings/status; renders the shortlist, client detail, scenario comparison, and briefing, returning only selected client names to shared state.
+- **Setup/app** receives TOML configuration and user choices; validates settings, wires components together, and owns shared navigation/selection.
+
+The clear-pieces option fits because each job can be specified and checked at its boundary. For my views piece specifically, receiving aggregate inputs rather than raw listening rows means chart and table work does not also take on data cleaning, counting, or file access.
+
+### 2b. Simple connections
+
+Only the loader/preparation component reads the source listening files and prepared Parquet. Views must never open CSV, Parquet, or raw JSON, calculate listener-level metrics, or receive account identifiers/HMAC keys. The filters component may handle internal grouped batches for aggregation but has no file or Streamlit access. Views receive aggregate client/version/week results, settings, and status; a chart or row selection returns only a client name to shared dashboard state. This keeps the connections simple and prevents the display from depending on storage or another view's internals.
+
+### 2c. Local changes
+
+On screen, the user can change inclusive playback dates, importer exclusion, minimum accounts, ranking emphasis, scenario coverage target, and selected/comparison clients. The matching controls belong in setup/shared state; ranking and scenario calculations belong in filters; chart, table, labels, and interaction behavior belong in views.
+
+Likely future changes include a new visual treatment, an additional view, a revised metric definition, or a changed default. A visual change should be made in the views contract (and its relevant acceptance check), while a metric definition should have one authoritative home in data rules and be passed through aggregates. Defaults and classifications belong in configuration. This follows local-change design: changing a chart should not require changing data preparation, and changing a definition should not produce inconsistent calculations across screens.
+
+### 2d. Real-world operation
+
+The combined prompt identifies the local full JSONL input as 3,966,393,313 bytes and the sample as 21,276 events (21,278 physical lines including its header and quoted multiline record). These are the specified input facts; the full-file totals must be recomputed during preparation rather than inferred from the separate overview dataset.
+
+Preparation reads raw data in bounded chunks, groups cleaned events, and writes compressed monthly-partitioned Parquet while retaining exact playback dates. At startup, the app loads validated configuration and the completed-cache manifest/status, then queries aggregates for the initial shortlist. On filter changes or navigation, it queries the prepared data with date and importer filters and renders aggregates; weight and target changes reuse base aggregates. Selecting a client triggers the corresponding aggregate detail query. It must not reread raw inputs or expose account-level rows on a dashboard rerun.
+
+The query memory budget is defined as total process RSS, with a default of 1,024 MiB; buffers and exact account-key sets are bounded, with spill-to-disk when needed. For the views piece, only the selected aggregate tables, their chart/table representations, settings, and status need to be in memory—not the full listening history or account identities. The application retains a completed prepared cache and aggregate query results keyed by data fingerprint/mode/filters; it does not retain raw event records in Streamlit state. This prepared-once/query-aggregates approach fits the large input and interactive use.
+
+### 2e. Open questions
+
+- The prompt defines scenario additions as hypothetical and requires an attainability/causality warning. The remaining visual question is the exact encoding that best distinguishes these hypothetical additions from observed counts while fitting the dashboard; the proposed improvement specifies a separate legend and a visually distinct outline/pattern. Confirm the encoding in a review of the rendered chart, without changing the distinction itself.
+- The vision refers to an “active” client maintainer, but observed submission data cannot establish current maintainer activity. The interface should present candidates as evidence for further research, not claim current activity; confirm with the team that this limitation is explicit in the shortlist and briefing.
+- Verify the selected actual dataset and its available dates before presenting a full-mode result. The prompt correctly requires recomputing full counts and prohibits treating the sample or another dump's totals as the selected input's results.
+
+## Part 3. My improvement to the draft prompt (handout 8.8)
+
+**What I improved, in one sentence:** In Section 7, I specified that the scenario-comparison chart visually separates hypothetical additions from observed listen counts and added an acceptance check for that distinction.
+
+### 3a. Before
+
+The following is the original Scenario comparison row and the adjacent acceptance check from `one-shot-prompt.md` before my change:
+
+````text
+| **Scenario comparison** | Select two or three clients from the complete eligible population; grouped bars for current valid-ID listens, unusable-ID listens, and scenario additions; table with accounts, current/target coverage, additions, and assumptions. Sort additions descending, then client. Stable client colors and a visible attainability/causality warning. |
+
+Acceptance check: if alpha has accounts A and B, and beta has accounts B and C, display two accounts for each client without reporting four unique accounts overall.
+````
+
+### 3b. After
+
+The following is the revised Scenario comparison row and both adjacent acceptance checks in `one-shot-prompt.md`:
+
+````text
+| **Scenario comparison** | Select two or three clients from the complete eligible population. In the grouped bar chart, show current valid-ID listens and unusable-ID listens as observed values, and show additional tagged listens as a visually distinct hypothetical scenario estimate (for example, with an outline or pattern and a separate legend entry). Do not stack or otherwise present scenario additions as observed listens. Include a table with accounts, current/target coverage, additions, and assumptions. Sort additions descending, then client. Use stable client colors and show the attainability/causality warning. |
+
+Acceptance check: if alpha has accounts A and B, and beta has accounts B and C, display two accounts for each client without reporting four unique accounts overall.
+
+Acceptance check: in the scenario comparison chart, observed listen counts are visually distinguishable from hypothetical additions; the scenario estimate is not presented as observed data and never exceeds unusable-ID listens.
+````
+
+### 3c. Why it is better
+
+This improves **one-shot-prompt-specs criterion 8, Complete**: before the change, an agent could choose a grouped-bar encoding that makes scenario additions look like measured listening data, leaving an important interpretation choice to guesswork. The new contract explicitly identifies which bars are observed and which are hypothetical, prohibits stacking them as if they were observed, and gives a checkable condition that the estimate stays within the observed unusable-ID opportunity. It also supports **criterion 3, Clear**, by giving the chart one unambiguous interpretation.
+
+The Section 8.4 design practice is to give a piece a clear responsibility/contract and make it independently checkable. This change stays within the views piece: it defines the scenario chart's display behavior and adds a targeted acceptance check, without changing data rules or scenario calculations. This is significant because an incorrect visual implication could lead a project lead to mistake a what-if estimate for an observed result. It is distinct from the teammate's account-reach improvement: it does not alter account measures, reach definitions, or the shortlist; it concerns only the visual distinction between observed counts and hypothetical scenario additions.
