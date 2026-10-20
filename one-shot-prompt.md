@@ -234,6 +234,10 @@ Always show sample/full mode, selected playback dates, source submission interva
 | **Scenario comparison** | Select two or three clients from the complete eligible population; grouped bars for current valid-ID listens, unusable-ID listens, and scenario additions; table with accounts, current/target coverage, additions, and assumptions. Sort additions descending, then client. Stable client colors and a visible attainability/causality warning. |
 | **Briefing** | Selected client, rank/score, metrics, dates, source/mode, filters, weights, target/scenario if chosen, version evidence, formulas, and quality warnings. Download aggregate CSV and a concise Markdown briefing; include metadata/settings in the CSV using repeated metadata columns. No automated contact action. |
 
+Show distinct_accounts and affected_accounts separately for each client. Do not sum either measure across clients or display the sum as combined unique account reach in the comparison screen or exports. Include this explanation in both: “An account may use more than one client, so account counts across clients are not additive.”
+
+Acceptance check: if alpha has accounts A and B, and beta has accounts B and C, display two accounts for each client without reporting four unique accounts overall.
+
 No selection shows instructions, not stale metrics. Fewer than two comparison clients shows a selection prompt. Shortlist scatter and comparison selector may include all eligible clients even when the initial table shows ten; label the difference. Offer a full eligible-summary CSV through the briefing/export area. Export only whitelisted client/version/week measures and settings: account counts such as `affected_accounts` are allowed; identifiers and hashes are forbidden.
 
 ## 8. Build order and acceptance checks
