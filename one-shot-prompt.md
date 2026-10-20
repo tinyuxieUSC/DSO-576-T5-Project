@@ -1,6 +1,6 @@
 # Build the Client Metadata Outreach Prioritizer
 
-Build and validate a local Streamlit application from this specification and the dataset repository `USC-DSO-576-PS/dataset_listenbrainz`. This file is self-contained: do not require the team's separate component files or Module 5 prototype. Implement the build below; leave cosmetic styling to your judgment.
+Build and validate a local Streamlit application from this specification and the dataset repository `USC-DSO-576-PS/dataset_listenbrainz`. This file is self-contained: do not require the team's separate component files or Module 5 prototype. Leave cosmetic styling to your judgment.
 
 ## 1. User, decision, and design
 
@@ -36,11 +36,11 @@ Use a configurable dataset root, normally the sibling folder `../dataset_listenb
 
 The local full input is 3,966,393,313 bytes, UTF-8 nested JSON with one event per line. Its `SCHEMA_SEQUENCE` is `1`; `START_TIMESTAMP` is `2026-09-09 00:00:02.717236+00:00` and `END_TIMESTAMP` is `2026-09-10 00:00:03.308037+00:00`. These describe submission collection, not when each event was played. A single file contains historical playback and does not provide complete playback history for any selected period.
 
-Inspection of its first 1,000 events found 2 syntactically valid submitted recording MBIDs, 0 absent client names, and 990 absent versions. This sequential subset is structural evidence only. The overview's 4,411,662 events and 3.22% MBID coverage concern another file; do not reuse them as this input's totals. Recompute full counts during preparation.
+A full audit of this exact input found **6,780,931 events**, 23,382 distinct accounts, and **138,996 syntactically valid recording MBIDs (2.0498%)**. All other recording IDs were absent/blank; no populated invalid IDs were found. Versions were absent on 6,253,926 events, and 20 playback timestamps exceeded the dump end. Source SHA-256: `8ee6665ea88f985052d76eb6eecd5d7c85d68afe6b399f0e4f473897cdfbcb48`. These facts concern this snapshot; the overview’s 4,411,662 events/3.22% concern another file. Recompute for other inputs.
 
 No reference-table join or auxiliary service is required for this product. The June 2025 metadata snapshot is not another listening dataset. Identifier coverage is distinct from matching to that reference sample.
 
-For a new machine, document access to the dataset repository, its README, `data_overview_listenbrainz.md`, and `sample/README.md`. An existing extracted input is sufficient. For missing full inputs, follow the overview's download links and publisher checksums; read its supplied download/unpack scripts as references, but implement a destination-configurable equivalent under application-owned `data/raw/` if needed. Do not run helpers that write into a read-only dataset checkout. Verify checksums, extract safely, and require explicit input selection; downloads/unpacking never occur implicitly on a Streamlit rerun. If access/download fails, explain the path/browser route; do not substitute a sample silently. Reproduce the sample path first when full data is unavailable.
+On a new machine, follow the dataset README, overview, and sample README. Use existing extracted inputs when available. Otherwise download through the overview’s links, verify publisher checksums, and extract safely. Supplied scripts are references: if they write into a read-only checkout, implement destination-configurable equivalents under application-owned `data/raw/`. Require explicit input selection; never download or unpack during dashboard reruns. For access failures, show the expected path and browser download route. Never substitute sample data silently; establish the sample build first when full data is unavailable.
 
 ## 3. Canonical data rules
 
@@ -69,9 +69,22 @@ Implement separate raw-JSON and CSV adapters into the same canonical rules. Extr
 
 Use Python JSON reading, pandas, and PyArrow. Start with `chunk_size = 10000` raw lines. Group each cleaned batch by `(play_date, client, client_version, account_key)`, retaining null accounts. Store Zstandard-compressed Parquet under `data/prepared/<fingerprint>/play_month=YYYY-MM/`. **The month is only a physical storage partition: retain the exact UTC `play_date` in every grouped row.** Do not create a separate file for every playback date in every input chunk.
 
-Coalesce temporary fragments into larger month files using bounded buffers. Within each output fragment, combine equal group keys by summing their counts and sort by `play_date, client`; null accounts remain a group. Target 32–128 MiB compressed files when a month has sufficient data, with 10,000-row Parquet row groups. Small months may use one smaller file, and large months may span several files. Bound the total buffer memory across months and compact incrementally; never load the full history just to compact it. This changes storage layout, not daily filter precision, client metrics, or eligibility rules.
+Coalesce temporary fragments into larger month files using bounded buffers. Within each output fragment, combine equal group keys by summing their counts and sort by `play_date, client`; null accounts remain a group. Target 32–128 MiB compressed files when a month has sufficient data, with 10,000-row Parquet row groups. Small months may use one smaller file, and large months may span several files. Bound the total buffer memory across months and compact incrementally; never load the full history just to compact it.
 
 **Evidence for this layout:** An AI-assisted feasibility experiment selected every 40th physical line from the September 10 incremental input, giving 169,524 events. The date-per-chunk layout produced 45,440 files and an all-date query took 51.983 seconds. Month compaction produced 260 files containing 78,645 grouped rows; three query-only runs took 0.397, 0.395, and 0.400 seconds. Every client's listen, valid/unusable-ID, distinct-account, and affected-account counts agreed with an independent raw-subset count. Environment: macOS ARM64, Python 3.14.7, pandas 3.0.6, PyArrow 25.0.1. These are systematic-subset measurements, not full-size or cold-disk guarantees; OS caches were not flushed. Experimental compaction loaded only the bounded subset and peaked near 2.07 GiB, so it does not validate bounded full-size preparation. Production must implement the bounded compaction above and measure its memory separately.
+
+**Full-file follow-up (October 19, 2026):** A bounded data-path prototype processed all 6,780,931 events from the audited input using the same pandas/grouped-Parquet approach. It used 10,000-event input chunks, a 100,000-group-record staging cap, and a 150,000-group-record compaction cap.
+
+| Full-file measurement | Result |
+|---|---:|
+| Preparation, including compaction | 41.956 seconds; peak process RSS 368.3 MiB |
+| Prepared output | 138,505 grouped rows; 261 files; 3,573,387 bytes |
+| All dates, importers included | 0.555 / 0.548 seconds across two runs |
+| All dates, importers excluded | 0.305 seconds |
+| Single day / cross-month range | 0.103 / 0.006 seconds |
+| Separate query-process peak RSS | 226.8 MiB |
+
+Every client’s total, valid/absent/invalid-ID, distinct-account, and affected-account counts exactly matched direct raw-event accumulators independent of the grouping/query code. No query-result cache was used and OS caches were not flushed. This validates full-snapshot data-path feasibility on the measured machine; it does not claim completed UI/export tests or production automatic-spill integration. The deployed implementation must still pass Section 8.
 
 | Prepared column | Type/meaning |
 |---|---|
@@ -88,9 +101,9 @@ Each fragment has unique group keys; keys may recur across fragments. The three 
 
 Prepare in a temporary directory and publish a manifest atomically after success. Record input paths/checksums/schema/mode, source collection intervals, accepted/rejected/duplicate-file counts, quality distributions, actual playback bounds, normalization/classification rules and secret-version fingerprints, timings, and raw/prepared sizes. Never record the secret itself. An interrupted run preserves the previous completed cache.
 
-For queries, use PyArrow to prune `play_month` partitions intersecting the selected range, then apply the exact inclusive `play_date` predicate and project only needed columns before streaming record batches to pandas. Use both the month and day predicates, including for a range crossing a month boundary. Keep only bounded batches, numeric accumulators, and exact per-client account-key sets in memory. Do not concatenate all selected fragments or cache the complete account-level table in Streamlit. For versions/weeks, key internal distinct sets by those groups as well. Never sum per-day or per-version distinct-account counts. Repeated group keys across different files must still be combined; file compaction must not be treated as event deduplication.
+For queries, use PyArrow to prune `play_month` partitions intersecting the selected range, then apply the exact inclusive `play_date` predicate and project only needed columns before streaming record batches to pandas. Keep only bounded batches, numeric accumulators, and exact per-client account-key sets in memory. Do not concatenate all selected fragments or cache the complete account-level table in Streamlit. For versions/weeks, key internal distinct sets by those groups as well. Never sum per-day or per-version distinct-account counts.
 
-**Exact counts within the memory budget:** Interpret `query_memory_budget_mb` as a limit on total query-process RSS in MiB (1,048,576 bytes), including interpreter/libraries, scanner metadata, buffers, and distinct-key sets. Use psutil to measure live RSS and include it in `requirements.txt` as a loader dependency. Measure the baseline first; reject an infeasible budget below the baseline plus space for a batch. Reserve headroom for the next batch. Measure preparation memory separately and use the bounded compaction already specified.
+**Exact counts within the memory budget:** Interpret `query_memory_budget_mb` as a limit on total query-process RSS in MiB (1,048,576 bytes), including interpreter/libraries, scanner metadata, buffers, and distinct-key sets. Measure live RSS with psutil. Measure the baseline first; reject an infeasible budget below the baseline plus space for a batch. Reserve headroom for the next batch. Measure preparation memory separately and use the bounded compaction already specified.
 
 When distinct-key sets approach the limit, spill internal `(group, account_key, affected)` pairs into temporary Parquet buckets determined by the account hash prefix. The same account always enters the same bucket across fragments and dates. Use pandas to deduplicate one bucket at a time, taking logical OR of `affected`, then add its exact distinct/affected counts to the client totals. Version/week group keys must remain part of the deduplication key. Drop null account keys from account counts only. Split an oversized bucket using a longer prefix; check temporary disk availability and remove temporary spill files after success or failure. Do not approximate counts, truncate the date range, or suppress clients to fit memory. Test the spill route with a deliberately small internal key-set allowance while keeping the process budget above the interpreter baseline.
 
@@ -137,7 +150,7 @@ Version results add `client_version` to the client measures. Weekly results add 
 
 Use the configured account floor and `max(user_minimum, floor)`. Rank named clients meeting that threshold, with importer exclusion already applied. Rank all eligible clients before taking a top ten or selecting comparison candidates. Keep unknown-client diagnostic totals separately.
 
-Use the log-normalized formula supplied in the filters component, not the older prototype's percentile formula:
+Rank eligible clients using:
 
 ```text
 norm(x) = log1p(x) / log1p(max(x over all rankable clients))
@@ -160,7 +173,7 @@ Use Python's round-to-nearest/ties-to-even rule and return an integer. This is a
 
 ## 6. Configuration, startup, and interaction
 
-Create `config.toml`, `outreach/__init__.py`, the modules above, `app.py`, `requirements.txt`, tests, and a README. Use Python 3.11+; dependencies are pandas, PyArrow, Streamlit, Altair, and pytest for tests. Record tested dependency versions after building. No database server, SQL engine, account credentials, or AI API is required.
+Create `config.toml`, `outreach/__init__.py`, the modules above, `app.py`, `requirements.txt`, tests, and a README. Use Python 3.11+; dependencies are pandas, PyArrow, Streamlit, Altair, psutil, and pytest for tests. Record tested dependency versions after building. No database server, SQL engine, account credentials, or AI API is required.
 
 Provide this editable starting configuration; paths resolve relative to the config file, with `dataset_root` used for dataset-relative input paths:
 
@@ -231,7 +244,7 @@ Always show sample/full mode, selected playback dates, source submission interva
 |---|---|
 | **Shortlist — first screen** | Decision description; top ten eligible clients with rank, score, client/type, total listens, distinct/affected accounts, missing usable IDs, and coverage. Highlight top three subtly. Scatter: affected accounts on x, missing usable IDs on y, size by total listens, color includes all three client types. Show exact counts in tooltips. Optional log axes must handle zeros explicitly. Row/point selection opens detail. |
 | **Client detail** | Selected-client cards; valid vs unusable ID stacked coverage bar with denominators and invalid-ID explanation; version table including `NOT_REPORTED` last and known-version share; weekly totals/missing/coverage when selected dates span more than seven days, with missing weeks unconnected and partial weeks labeled. Show assumptions and rank-sensitivity table. |
-| **Scenario comparison** | Select two or three clients from the complete eligible population. In the grouped bar chart, show current valid-ID listens and unusable-ID listens as observed values, and show additional tagged listens as a visually distinct hypothetical scenario estimate (for example, with an outline or pattern and a separate legend entry). Do not stack or otherwise present scenario additions as observed listens. Include a table with accounts, current/target coverage, additions, and assumptions. Sort additions descending, then client. Use stable client colors and show the attainability/causality warning. |
+| **Scenario comparison** | Select two or three eligible clients. Grouped bars show observed valid-ID and unusable-ID listens, plus distinctly encoded hypothetical additions with a separate legend; never stack additions or present them as observed. Table: accounts, current/target coverage, additions, assumptions. Sort additions descending, then client. Keep client colors stable and show the attainability/causality warning. |
 | **Briefing** | Selected client, rank/score, metrics, dates, source/mode, filters, weights, target/scenario if chosen, version evidence, formulas, and quality warnings. Download aggregate CSV and a concise Markdown briefing; include metadata/settings in the CSV using repeated metadata columns. No automated contact action. |
 
 Show distinct_accounts and affected_accounts separately for each client. Do not sum either measure across clients or display the sum as combined unique account reach in the comparison screen or exports. Include this explanation in both: “An account may use more than one client, so account counts across clients are not additive.”
@@ -244,14 +257,14 @@ No selection shows instructions, not stale metrics. Fewer than two comparison cl
 
 ## 8. Build order and acceptance checks
 
-Build in order: data rules/adapters → preparation/report → streamed aggregate queries → scoring/scenarios → configuration/startup → views/export. Run relevant checks at each boundary. Do not claim measured performance or full-data results before running them.
+Complete the gates below in row order. Report performance and full-data results only after measuring them.
 
 | Build boundary | Gate before moving to the next stage |
 |---|---|
 | Data rules/adapters | Equivalent raw/CSV events produce the same canonical values; malformed and edge-case inputs follow the expected acceptance/rejection rules (check 1). |
 | Preparation/report | Accepted, rejected, and duplicate-file counts reconcile with the physical inputs (check 4). |
 | Streamed aggregate queries | The January fixture returns the expected alpha/beta totals and exact distinct-account counts; chunk-size and cross-fragment checks pass (check 2). |
-| Scoring/scenarios | Fixture rankings, sensitivity order, and target additions match the expected results above. |
+| Scoring/scenarios | Rankings, sensitivity order, and target additions match the fixture results below. |
 | Configuration/startup | Invalid settings and missing or mismatched caches produce actionable errors without silently switching modes (check 7). |
 | Views/export | Fixture values, selection/empty states, and the export whitelist are verified (check 6). |
 
@@ -285,7 +298,7 @@ Also verify:
 1. Raw adapters agree on equivalent events. Test UTF-8, absent optional blocks, malformed JSON/timestamps, blank/invalid UUIDs, null accounts, and unknown clients/versions; retain unusable IDs and null-account listens.
 2. Chunk sizes 1 and 10, and splitting the same account across fragments/dates/versions, yield identical exact aggregates. Assert `total = valid + absent + invalid`, `affected_accounts <= distinct_accounts`, and version listen totals equal client totals. Do not require version distinct-account totals to sum.
 3. Include invalid IDs in opportunity while reporting them separately; unknown accounts add listens but no distinct account. Unknown clients remain in diagnostics but are unranked; named unknown-type clients are labeled rather than falsely classified.
-4. Reconcile physical lines for JSONL, including rejected blank lines; reconcile parsed event records for CSV, excluding its header, and report physical lines separately. Preserve quoted newlines: the supplied sample must yield 21,276 events from 21,278 physical lines including its header. Stop on unrecoverable CSV syntax errors rather than guessing record boundaries. Account separately for duplicate-file skips. Compare an independent raw-subset count with preparation/query results for the identical subset; isolate subset caches from sample/full caches. Reproduce the first-1,000-event structural observations before citing them as confirmed.
+4. Reconcile physical lines for JSONL, including rejected blank lines; reconcile parsed event records for CSV, excluding its header, and report physical lines separately. Preserve quoted newlines: the supplied sample must yield 21,276 events from 21,278 physical lines including its header. Stop on unrecoverable CSV syntax errors rather than guessing record boundaries. Account separately for duplicate-file skips. Compare an independent raw-subset count with preparation/query results for the identical subset; isolate subset caches from sample/full caches. For the audited source hash, reproduce the full-file counts in Section 2; for another snapshot, record its own counts.
 5. Validate date endpoints, alias mapping, exact importer exclusion, input overlap warnings, partial/missing weeks, zero/all-valid coverage, empty results, rank ties, all-zero score maxima, score bounds, target bounds, and ties-to-even scenario rounding.
 6. Screens agree with fixture values, selection updates the correct client, no selection/empty filters do not crash, and exports contain settings and formulas but no identifiers. Test a whitelist; do not reject legitimate aggregate columns merely because their names contain `account`.
 7. Input/rule changes invalidate preparation; interrupted preparation leaves the prior cache intact; reruns/weights/targets do not read raw inputs. Missing files, unsupported schema, denied paths, and invalid settings produce actionable errors and never silent sample fallback.
@@ -294,4 +307,4 @@ Also verify:
 
 ## 9. Later deployment
 
-Keep the same contracts. Run preparation outside the web process, store versioned Parquet and the account-key secret in private persistent storage, and serve cached aggregate responses. Size memory and concurrency from measured queries; keep account-level fragments inaccessible to the browser. Cloud hosting, external feasibility research, reference matching, and database migration are not required for this local build.
+Preserve the contracts. Prepare outside the web process; keep versioned Parquet and the account-key secret in private persistent storage. Serve cached aggregates and size memory/concurrency from measured queries. Keep account-level fragments inaccessible to browsers. Cloud hosting, feasibility research, reference matching, and database migration are outside the local build.
