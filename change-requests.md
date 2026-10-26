@@ -44,3 +44,21 @@ Request template:
 - **Change:** Show the usable-MBID count, total listens, coverage calculation and result (469 / 889 = 52.8%), sample mode and playback-date scope, and a brief data limitation together beside the coverage metric.
 - **Priority:** medium
 - **Status:** open
+
+### CR-03: Compare Rankings Across Different Weights
+
+- **From:** Gigi Zhu, 2026-10-26
+- **Part:** Shortlist ranking feature (Part 1)
+- **Evidence:** In Sample Data mode, with playback dates 2005-02-13 through 2026-09-03, classified importers excluded and minimum accounts set to 100, I compared reach weights of 0%, 50% and 100%. Web scrobbler ranked fourth at 0%, while listenbrainz android ranked fourth at 50% and 100%. The Shortlist table shows only the current setting, so comparing results required screenshots.
+- **Change:** Add a side-by-side comparison of all shortlisted clients’ ranks at 0%, 50% and 100% reach weight. Explain rank changes using affected-account counts and unusable-ID listen counts so users can understand how their priorities affect the recommendation.
+- **Priority:** medium
+- **Status:** open
+
+### CR-04: Show the Distribution of Affected Accounts
+
+- **From:** Gigi Zhu, 2026-10-26
+- **Part:** Affected accounts (Part 2)
+- **Evidence:** For navidrome in Sample Data mode, with playback dates 2005-02-13 through 2026-09-03, the app showed 420 listens without usable recording MBIDs and 318 affected accounts. An independent raw-CSV check confirmed 318 affected accounts: 279 had exactly one unusable-ID listen and 39 had multiple. Another 401 accounts had none. The current totals do not show this distribution.
+- **Change:** Add an aggregate breakdown of accounts with zero, one and multiple unusable-ID listens for the selected client and date range. This would help users distinguish a problem spread across many accounts from repeated missing IDs concentrated in fewer accounts.
+- **Priority:** medium
+- **Status:** open
