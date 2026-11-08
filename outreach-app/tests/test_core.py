@@ -117,6 +117,29 @@ def test_loader_enforces_floor(fixture_data,january):
     assert get_client_metrics(replace(fixture_data,minimum_accounts_floor=5),january).empty
 
 
+def test_loader_keeps_absent_and_invalid_ids_separate(fixture_data,january):
+    import pyarrow as pa
+    import pyarrow.parquet as pq
+    from outreach.prepare import SCHEMA
+
+    path = fixture_data.path/'play_month=2026-01'/'0.parquet'
+    table = pq.read_table(path).to_pandas()
+    table['missing_mbid_listens'] = 9
+    table['invalid_mbid_listens'] = 1
+    pq.write_table(pa.Table.from_pandas(table, schema=SCHEMA, preserve_index=False), path)
+
+    alpha = get_client_metrics(fixture_data,january).set_index('client').loc['alpha']
+    assert (alpha.absent_recording_mbid, alpha.invalid_recording_mbid,
+            alpha.missing_recording_mbid) == (20, 1, 21)
+
+
+def test_default_query_excludes_importers(fixture_data,january):
+    metrics = get_client_metrics(fixture_data,january).set_index('client')
+    assert 'imp' not in metrics.index
+    included = get_client_metrics(fixture_data,replace(january,exclude_importers=False)).set_index('client')
+    assert included.loc['imp','total_listens'] == 2000
+
+
 def test_spill_same_account_across_versions(fixture_data,january):
     import hashlib
     import pyarrow.parquet as pq
