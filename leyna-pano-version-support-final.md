@@ -18,13 +18,19 @@ ListenBrainz defines `submission_client_version` as the version of the software 
 
 **Live app:** [Client Metadata Outreach Prioritizer](https://appapppy-mdilrzqijilc29whq52tc2.streamlit.app/). Morgan would select `pano scrobbler` in client detail, record the playback dates and filters, and review the version table and weekly playback evidence.
 
-**Evidence access note:** On November 8, 2026, an unauthenticated request to the public URL redirected to Streamlit authentication. I could not verify live deployment selections or capture its screen. The repository configuration defaults to sample mode, observed playback-date bounds, importer exclusion, a 100-account minimum, a 50% reach weight, and a 75% scenario target; deployment settings were not verified.
+**Live-app evidence:** The screenshots below were captured from the public app on November 8, 2026. They show sample data, playback dates 2005-02-13 through 2026-09-03 UTC, classified-importer exclusion on, a 100-account minimum, 50% affected-account reach weight, and 75% scenario target. The client-detail selection is `pano scrobbler`.
 
 **Sample-data evidence:** I independently grouped the supplied `sample/listens_20260904.csv` using the app's client-name, playback-timestamp, version-label, and UUID-syntax rules. The sample contains 520 Pano listen events from 360 distinct accounts across 17 reported version labels. All 520 lack a recording MBID; none has a syntactically valid or populated-invalid ID. These are sample calculations, not values verified in a live session.
 
 ![Figure 1. Counts of Pano listen submissions by reported version in the sample; not installation counts or a live-app screenshot.](figures/pano-version-listens.png)
 
-The largest group is version 4.42, with 437 of the 520 Pano sample events. Version strings are free text, so they are not guaranteed to be standardized software releases. Event counts are not installation counts or support cases. The live-app screenshot is still not included; the public app redirected to authentication during this check.
+![Figure 2. Live client-detail view with Pano Scrobbler selected and summary metrics visible.](screenshots/pano-client-detail.png)
+
+![Figure 3. Live version evidence table and weekly playback chart for Pano Scrobbler.](screenshots/pano-version-evidence.png)
+
+![Figure 4. Live weekly evidence table and ranking sensitivity at the displayed reach-weight settings.](screenshots/pano-weekly-gaps-and-ranking.png)
+
+The live view reports 520 listens, 360 distinct accounts, 360 affected accounts, 0.0% MBID coverage, rank 2, and score 0.891. Its version table shows 437 listens labeled 4.42 and 30 labeled 4.40. The screenshot values agree with the independent sample calculation above. Version strings are free text, and event counts are not installations or support cases.
 
 ## 4. Reading the result
 

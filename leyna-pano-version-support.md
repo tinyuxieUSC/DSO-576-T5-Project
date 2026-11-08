@@ -26,7 +26,13 @@ ListenBrainz defines `submission_client_version` as the version of the software 
 
 ![Pano Scrobbler ListenBrainz sample submits by reported version. Independently calculated from the provided sample CSV; this is not a live-app screenshot.](figures/pano-version-listens.png)
 
-The checked-in `outreach-app/config.toml` also defaults to a 50% reach weight and a 75% scenario target; neither is used in this version-count figure. A direct unauthenticated request to the public URL redirected to Streamlit authentication, so I could not inspect live settings or capture the app. The figure is a calculation from the provided sample CSV, not a screenshot.
+![Live app: Pano client detail and summary metrics.](screenshots/pano-client-detail.png)
+
+![Live app: Pano version evidence and weekly playback chart.](screenshots/pano-version-evidence.png)
+
+![Live app: weekly evidence table and ranking sensitivity.](screenshots/pano-weekly-gaps-and-ranking.png)
+
+The live screenshots below show the selected Pano detail and the settings used: sample data, inclusive playback dates 2005-02-13 through 2026-09-03 UTC, importer exclusion on, 100-account minimum, 50% reach weight, and 75% scenario target. The chart above is an independent calculation from the provided sample CSV, not a screenshot.
 
 **What the app shows:** The client-detail code displays aggregate listens, distinct and affected accounts, recording-MBID coverage, version evidence, weekly playback evidence, and ranking sensitivity. Version labels remain free text, with the known-version share displayed. Weekly evidence uses UTC weeks and marks partial edge weeks. These measures describe selected ListenBrainz submissions, not all Pano installations, support requests, or compatibility costs.
 
