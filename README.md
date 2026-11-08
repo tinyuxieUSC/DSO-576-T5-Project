@@ -1,5 +1,13 @@
 # DSO-576-T5 Project
 
+## Public sample app and individual case
+
+- [Open the live app](https://appapppy-mdilrzqijilc29whq52tc2.streamlit.app/). It runs from the `case-live-evidence` branch with `streamlit_app.py` and prepares the portable course sample on startup.
+- [Tinyu Xie's individual case PDF](cases/tinyu/tinyu-case-nora-pilot.pdf), [final memo](cases/tinyu/nora-pilot-final.md), and [verification notes](cases/tinyu/submission-check.md).
+- This deployment uses the complete course listens sample, not the full dump. See [sample provenance and fields](outreach-app/demo-input/README.md). It does not need a sibling dataset folder.
+- From the repository root, install `requirements.txt`, then run `python -m streamlit run streamlit_app.py`.
+
+
 ## Run the dashboard
 
 All app code, configuration, tests, and build reports are in [`outreach-app/`](outreach-app/). See the [app README](outreach-app/README.md) for terminal setup, sample/full data commands, and troubleshooting.

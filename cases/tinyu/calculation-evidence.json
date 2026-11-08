@@ -1,0 +1,54 @@
+{
+  "source_sha256": "ac66335410c79c991c3b9609bbe0829789399be056652626119a5497bc84f0ee",
+  "events": 21276,
+  "start": "2005-02-13",
+  "end": "2026-09-03",
+  "eligible_clients": 5,
+  "independent_aggregate_check": "PASS",
+  "scenarios": [
+    {
+      "client": "navidrome",
+      "total": 889,
+      "valid": 469,
+      "accounts": 719,
+      "affected": 318,
+      "target": 0.01,
+      "app_additions": 0,
+      "achieved_coverage": 0.5275590551181102,
+      "minimum_to_reach": 0
+    },
+    {
+      "client": "navidrome",
+      "total": 889,
+      "valid": 469,
+      "accounts": 719,
+      "affected": 318,
+      "target": 0.75,
+      "app_additions": 198,
+      "achieved_coverage": 0.750281214848144,
+      "minimum_to_reach": 198
+    },
+    {
+      "client": "pano scrobbler",
+      "total": 520,
+      "valid": 0,
+      "accounts": 360,
+      "affected": 360,
+      "target": 0.01,
+      "app_additions": 5,
+      "achieved_coverage": 0.009615384615384616,
+      "minimum_to_reach": 6
+    },
+    {
+      "client": "pano scrobbler",
+      "total": 520,
+      "valid": 0,
+      "accounts": 360,
+      "affected": 360,
+      "target": 0.75,
+      "app_additions": 390,
+      "achieved_coverage": 0.75,
+      "minimum_to_reach": 390
+    }
+  ]
+}
