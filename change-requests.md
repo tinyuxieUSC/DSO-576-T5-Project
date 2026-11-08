@@ -26,44 +26,7 @@ Request template:
 
 ## Requests
 
-<!-- Add new requests below this comment, at the end of the file, newest last. -->
-### CR-01: Prioritize Versions by Missing MBIDs
-
-- **From:** Zhongze Zhou, 2026-10-25
-- **Part:** Client Detail feature (Part 1)
-- **Evidence:** In Sample Data mode, I viewed navidrome's Client Detail page. The long version evidence table made it difficult to identify which versions had the most missing MBIDs; the table is sorted by total listens.
-- **Change:** Add a concise version-level summary or chart ranked by missing recording-MBID counts so the versions with the largest gaps are easy to identify.
-- **Priority:** medium
-- **Status:** open
-
-### CR-02: Show Coverage Calculation and Sample Context
-
-- **From:** Zhongze Zhou, 2026-10-25
-- **Part:** Recording-MBID coverage (Part 2)
-- **Evidence:** For navidrome in Sample Data mode, with playback dates 2005-02-13 through 2026-09-03, the app showed 889 listens, 420 without usable MBID, and 52.8% coverage. My independent check found 469 usable recording MBIDs out of 889 listens, also 52.8%. The check covers this sample, client, and date range only.
-- **Change:** Show the usable-MBID count, total listens, coverage calculation and result (469 / 889 = 52.8%), sample mode and playback-date scope, and a brief data limitation together beside the coverage metric.
-- **Priority:** medium
-- **Status:** open
-
-### CR-03: Compare Rankings Across Different Weights
-
-- **From:** Gigi Zhu, 2026-10-26
-- **Part:** Shortlist ranking feature (Part 1)
-- **Evidence:** In Sample Data mode, with playback dates 2005-02-13 through 2026-09-03, classified importers excluded and minimum accounts set to 100, I compared reach weights of 0%, 50% and 100%. Web scrobbler ranked fourth at 0%, while listenbrainz android ranked fourth at 50% and 100%. The Shortlist table shows only the current setting, so comparing results required screenshots.
-- **Change:** Add a side-by-side comparison of all shortlisted clients’ ranks at 0%, 50% and 100% reach weight. Explain rank changes using affected-account counts and unusable-ID listen counts so users can understand how their priorities affect the recommendation.
-- **Priority:** medium
-- **Status:** open
-
-### CR-04: Show the Distribution of Affected Accounts
-
-- **From:** Gigi Zhu, 2026-10-26
-- **Part:** Affected accounts (Part 2)
-- **Evidence:** For navidrome in Sample Data mode, with playback dates 2005-02-13 through 2026-09-03, the app showed 420 listens without usable recording MBIDs and 318 affected accounts. An independent raw-CSV check confirmed 318 affected accounts: 279 had exactly one unusable-ID listen and 39 had multiple. Another 401 accounts had none. The current totals do not show this distribution.
-- **Change:** Add an aggregate breakdown of accounts with zero, one and multiple unusable-ID listens for the selected client and date range. This would help users distinguish a problem spread across many accounts from repeated missing IDs concentrated in fewer accounts.
-- **Priority:** medium
-- **Status:** open
-
-### CR-05: Make the team run instructions portable
+### CR-01: Make the team run instructions portable
 
 - **From:** Giselle Luk, 2026-10-26
 - **Part:** outreach shortlist feature
@@ -72,7 +35,7 @@ Request template:
 - **Priority:** high
 - **Status:** open
 
-### CR-06: Separate absent and invalid recording IDs in the shortlist
+### CR-02: Separate absent and invalid recording IDs in the shortlist
 
 - **From:** Giselle Luk, 2026-10-26
 - **Part:** outreach shortlist feature
@@ -81,20 +44,56 @@ Request template:
 - **Priority:** medium
 - **Status:** open
 
-### CR-07: Show achieved coverage and the minimum additions needed to reach the target
+### CR-03: Show achieved coverage and the minimum additions needed to reach the target
 
 - **From:** Tinyu Xie, 2026-10-26
 - **Part:** Scenario comparison; additional tagged listens
-- **Evidence:** Codex-assisted app and calculation checks, reviewed and adopted by Tinyu: Sample mode, UTC dates 2005-02-13 through 2026-09-03, importer exclusion on, minimum accounts 100. At a 1% target, Pano Scrobbler has 520 listens and 0 valid IDs. The browser and independent raw-CSV search both return 5 rounded additions. That yields 0.9615%; a separate integer search requires 6 to reach at least 1%. The table does not show achieved post-rounding coverage. `outreach/filters.py:54` uses nearest rounding rather than a minimum-to-reach rule.
+- **Evidence:** Codex-assisted app and calculation checks, reviewed and adopted by Tinyu:  Sample mode, UTC dates 2005-02-13 through 2026-09-03, importer exclusion on, minimum accounts 100. At a 1% target, Pano Scrobbler has 520 listens and 0 valid IDs. The browser and independent raw-CSV search both return 5 rounded additions. That yields 0.9615%; a separate integer search requires 6 to reach at least 1%. The table does not show achieved post-rounding coverage. `outreach/filters.py:54` uses nearest rounding rather than a minimum-to-reach rule.
 - **Change:** Keep the documented approximate scenario count, add achieved post-rounding coverage, and expose a separate minimum-to-reach count with its distinct meaning. Test both against the 520-listen, 0-valid, 1%-target case. Do not represent a hypothetical count as achievable maintainer impact.
 - **Priority:** medium
 - **Status:** open
 
-### CR-08: Export the complete selected scenario comparison
+### CR-04: Export the complete selected scenario comparison
 
 - **From:** Tinyu Xie, 2026-10-26
 - **Part:** Scenario comparison to briefing workflow
-- **Evidence:** Codex-assisted app and calculation checks, reviewed and adopted by Tinyu: Selected navidrome and Pano Scrobbler in Scenario comparison. At 75%, their additions were 198 and 390. Later, at the 1% target, opening Briefing with no inspected client requests a client selection; inspecting navidrome produces numerical evidence for navidrome alone even while comparison settings list both clients. `outreach/views.py:180` filters scenario evidence to the inspected client. The comparison table's seven-column data frame at line 168 has no playback dates, source mode, or warning fields.
+- **Evidence:** Codex-assisted app and calculation checks, reviewed and adopted by Tinyu:  Selected navidrome and Pano Scrobbler in Scenario comparison. At 75%, their additions were 198 and 390. Later, at the 1% target, opening Briefing with no inspected client requests a client selection; inspecting navidrome produces numerical evidence for navidrome alone even while comparison settings list both clients. `outreach/views.py:180` filters scenario evidence to the inspected client. The comparison table's seven-column data frame at line 168 has no playback dates, source mode, or warning fields.
 - **Change:** Add a comparison CSV and Markdown briefing for all two or three selected clients, including observed totals/coverage, hypothetical additions, target, mode, source fingerprint, playback dates, filters, rounding interpretation, scenario limitations, and non-additive account warning. Preserve the existing single-client briefing. Verify that a two-client export contains two numerical result rows and the settings needed to reproduce them.
+- **Priority:** medium
+- **Status:** open
+
+### CR-05: Prioritize Versions by Missing MBIDs
+
+- **From:** Zhongze Zhou, 2026-10-25
+- **Part:** Client Detail feature (Part 1)
+- **Evidence:** In Sample Data mode, I viewed navidrome's Client Detail page. The long version evidence table made it difficult to identify which versions had the most missing MBIDs; the table is sorted by total listens.
+- **Change:** Add a concise version-level summary or chart ranked by missing recording-MBID counts so the versions with the largest gaps are easy to identify.
+- **Priority:** medium
+- **Status:** open
+
+### CR-06: Show Coverage Calculation and Sample Context
+
+- **From:** Zhongze Zhou, 2026-10-25
+- **Part:** Recording-MBID coverage (Part 2)
+- **Evidence:** For navidrome in Sample Data mode, with playback dates 2005-02-13 through 2026-09-03, the app showed 889 listens, 420 without usable MBID, and 52.8% coverage. My independent check found 469 usable recording MBIDs out of 889 listens, also 52.8%. The check covers this sample, client, and date range only.
+- **Change:** Show the usable-MBID count, total listens, coverage calculation and result (469 / 889 = 52.8%), sample mode and playback-date scope, and a brief data limitation together beside the coverage metric.
+- **Priority:** medium
+- **Status:** open
+
+### CR-07: Compare Rankings Across Different Weights
+
+- **From:** Gigi Zhu, 2026-10-26
+- **Part:** Shortlist ranking feature (Part 1)
+- **Evidence:** In Sample Data mode, with playback dates 2005-02-13 through 2026-09-03, classified importers excluded and minimum accounts set to 100, I compared reach weights of 0%, 50% and 100%. Web scrobbler ranked fourth at 0%, while listenbrainz android ranked fourth at 50% and 100%. The Shortlist table shows only the current setting, so comparing results required screenshots.
+- **Change:** Add a side-by-side comparison of all shortlisted clients’ ranks at 0%, 50% and 100% reach weight. Explain rank changes using affected-account counts and unusable-ID listen counts so users can understand how their priorities affect the recommendation.
+- **Priority:** medium
+- **Status:** open
+
+### CR-08: Show the Distribution of Affected Accounts
+
+- **From:** Gigi Zhu, 2026-10-26
+- **Part:** Affected accounts (Part 2)
+- **Evidence:** For navidrome in Sample Data mode, with playback dates 2005-02-13 through 2026-09-03, the app showed 420 listens without usable recording MBIDs and 318 affected accounts. An independent raw-CSV check confirmed 318 affected accounts: 279 had exactly one unusable-ID listen and 39 had multiple. Another 401 accounts had none. The current totals do not show this distribution.
+- **Change:** Add an aggregate breakdown of accounts with zero, one and multiple unusable-ID listens for the selected client and date range. This would help users distinguish a problem spread across many accounts from repeated missing IDs concentrated in fewer accounts.
 - **Priority:** medium
 - **Status:** open
