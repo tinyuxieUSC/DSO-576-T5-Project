@@ -64,3 +64,26 @@ def test_comparison_briefing_works_without_an_inspected_client(portable_ui):
     app.selectbox[0].select('navidrome').run()
     assert not app.exception
     assert any('client: navidrome' in m.value for m in app.markdown)
+
+
+def test_portable_launcher_recovers_after_host_refreshes_source_timestamp(tmp_path):
+    import os
+    import shutil
+    original = Path(__file__).resolve().parents[2]
+    shutil.copy2(original/'streamlit_app.py',tmp_path/'streamlit_app.py')
+    app_dir=tmp_path/'outreach-app'
+    app_dir.mkdir()
+    for filename in ['app.py','config.cloud.toml']:
+        shutil.copy2(original/'outreach-app'/filename,app_dir/filename)
+    shutil.copytree(original/'outreach-app/outreach',app_dir/'outreach',ignore=shutil.ignore_patterns('__pycache__'))
+    shutil.copytree(original/'outreach-app/demo-input',app_dir/'demo-input')
+    app=AppTest.from_file(tmp_path/'streamlit_app.py',default_timeout=60).run()
+    assert not app.exception
+    assert len(app.tabs)==4
+    source=app_dir/'demo-input/listens_20260904.csv'
+    stat=source.stat()
+    os.utime(source,ns=(stat.st_atime_ns,stat.st_mtime_ns+1000000))
+    app.run()
+    assert not app.exception
+    assert not app.error
+    assert len(app.tabs)==4

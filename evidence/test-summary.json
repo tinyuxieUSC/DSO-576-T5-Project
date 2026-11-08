@@ -1,10 +1,10 @@
 {
   "command": "uv run python -m pytest -q",
-  "tests": 26,
+  "tests": 27,
   "failures": 0,
   "errors": 0,
   "skipped": 1,
-  "duration_seconds": 8.278,
+  "duration_seconds": 13.443,
   "environment": "Clean uv.lock environment; Python 3.14.7; macOS",
   "skip_reason": "Full-mode integration skipped: public deployment uses bundled sample, no full cache provided."
 }
