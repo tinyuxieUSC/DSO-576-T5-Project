@@ -22,28 +22,49 @@ ListenBrainz defines `submission_client_version` as the version of the software 
 
 **Live link:** [Client Metadata Outreach Prioritizer](https://appapppy-mdilrzqijilc29whq52tc2.streamlit.app/).
 
-**What Morgan would select:** Choose `pano scrobbler` in client detail, record the displayed playback-date range, and note whether classified importers are excluded and the minimum-account setting. Inspect its version table and weekly playback evidence. Keep the live selections visible in the screenshot.
+**What Morgan would select:** The repository defaults specify sample mode, inclusive observed playback bounds, classified-importer exclusion, a 100-account minimum, and `pano scrobbler` in client detail. These settings describe the checked-in config, not a verified live session.
 
-**What was verified in this session:** A direct unauthenticated request to the public URL redirected to Streamlit authentication. I could not inspect live settings or capture a screenshot, and did not use a local app. The checked-in `outreach-app/config.toml` defaults to sample mode, observed playback-date bounds, importer exclusion, a minimum distinct-account setting of 100, a 50% reach weight, and a 75% scenario target; these are repository defaults and were not verified against the deployment.
+![Pano Scrobbler ListenBrainz sample submits by reported version. Independently calculated from the provided sample CSV; this is not a live-app screenshot.](figures/pano-version-listens.png)
 
-**Live screenshot:** Not available in this draft. Add a genuine capture from the public app as `screenshots/pano-version.png` when the deployment can be opened. No screen has been redrawn or substituted.
+The checked-in `outreach-app/config.toml` also defaults to a 50% reach weight and a 75% scenario target; neither is used in this version-count figure. A direct unauthenticated request to the public URL redirected to Streamlit authentication, so I could not inspect live settings or capture the app. The figure is a calculation from the provided sample CSV, not a screenshot.
 
-**What the code says the app shows:** The client-detail view displays aggregate listens, distinct and affected accounts, recording-MBID coverage, version evidence, weekly playback evidence, and ranking sensitivity. Version labels remain free text, with the known-version share displayed. Weekly evidence uses UTC weeks and marks partial edge weeks. These measures describe selected ListenBrainz submissions, not all Pano installations, support requests, or compatibility costs.
+**What the app shows:** The client-detail code displays aggregate listens, distinct and affected accounts, recording-MBID coverage, version evidence, weekly playback evidence, and ranking sensitivity. Version labels remain free text, with the known-version share displayed. Weekly evidence uses UTC weeks and marks partial edge weeks. These measures describe selected ListenBrainz submissions, not all Pano installations, support requests, or compatibility costs.
 
 ## 4. Reading the result for Morgan's decision
 
-**Does the number measure what Morgan cares about?** Only partly. ListenBrainz listens grouped by reported Pano version can show that some submissions in the selected data carry that version label. The data do not count active installations, support incidents, reproduction rates, engineering effort, or the number of users unable to upgrade. Those missing measures are central to a decision about continued compatibility support. I would use version traffic to choose what to investigate, not as the support decision itself.
+**Does the number measure what Morgan cares about?** Only partly. The sample contains 520 Pano listen events from 360 distinct accounts across 17 reported version labels; every one of those 520 events lacks a recording MBID under the app's UUID-syntax rule. The largest version group is 4.42 with 437 events. This is a signal of observed submissions in this sample, not a measure of whether Pano itself works or whether an older build deserves ongoing support. The data do not count active installations, support incidents, reproducible failures, engineering effort, or users unable to upgrade. I would use version traffic to choose what to investigate, not as the support decision itself.
 
-**Who is in the rows, and who is not?** A source row is an accepted submitted listen event, not a unique installation, user, bug, or support request. The query applies the selected playback dates and may exclude clients classified as importers. Distinct-account metrics cannot include events with no valid account key. The app states that observed ListenBrainz submissions are an incomplete sample of playback history and client users. Pano users who do not submit to ListenBrainz, plus unknown or inconsistent version labels, are missing from version-specific conclusions.
+**Who is in the rows, and who is not?** Each source row is one accepted listen submission. The sample CSV has 21,276 event rows; 520 are labeled `Pano Scrobbler`, with Pano playback dates from 2026-02-24 through 2026-09-03 UTC. The query uses the selected inclusive playback dates and excludes clients classified as importers. Distinct-account metrics cannot include events without a valid account key. The app says observed ListenBrainz submissions are an incomplete sample of playback history and client users. Pano users who do not submit to ListenBrainz, support cases, installations, and unreported or inconsistent version labels are not represented by these counts.
 
 **What outside the data matters?** Release notes, open issues, support messages, crash logs, operating-system versions, reproducible tests on older Pano builds, whether users can upgrade, and the maintainer's available time. The official issue thread illustrates the value of version-specific reproduction; it does not establish current support needs for Pano.
 
-**What could Morgan wrongly conclude?** Morgan could treat a smaller observed count for an older version as proof that nobody needs it, or a larger count as proof that it is costly to support or currently broken. Neither follows: the sample is incomplete, and it contains neither support workload nor causal evidence about compatibility. Morgan should check actual reports and reproduce a concrete issue before deciding what to maintain.
+**What could Morgan wrongly conclude?** Morgan could treat a smaller observed count for an older version as proof that nobody needs it, or the 437 submissions labeled 4.42 as proof that older versions can be dropped. Neither follows: event counts are not installation counts, the sample is incomplete, and it contains neither support workload nor evidence of a compatibility defect. Morgan should check current reports and reproduce a concrete issue before changing support policy.
 
-**Code evidence:** `outreach/data_rules.py` turns each accepted event into a listen count; `outreach/loader.py` groups version metrics using the submitted version text and applies date/importer filters; `outreach/views.py` describes version strings as free text and states that ListenBrainz submissions are an incomplete sample. No Pano-specific app result was claimed because the live view was inaccessible in this session.
+**Reproducible check:** The chart was calculated from `../../dataset_listenbrainz/sample/listens_20260904.csv` with the app's client normalization, timestamp-to-UTC playback date, version trimming, UUID-syntax ID rule, and account deduplication. The sample defaults exclude classified importers; Pano is classified as a regular client. This independent calculation is not a live-app screenshot.
+
+```text
+Sample source rows: 21276
+Pano listen rows: 520
+Pano distinct accounts: 360
+Reported version labels: 17
+Pano playback span: 2026-02-24 through 2026-09-03 UTC
+valid recording MBID syntax: 0
+absent recording MBID syntax: 520
+invalid recording MBID syntax: 0
+Largest version groups:
+  4.42: 437
+  4.40: 30
+  4.38: 13
+  3.45 - 2025, Mar 16: 10
+  3.44 - 2025, Jan 08: 6
+  4.41: 5
+  Other (11 reported version labels): 19
+```
+
+The reproducible script is [`scripts/check_pano_sample.py`](scripts/check_pano_sample.py). The app's calculation sources are `outreach-app/outreach/data_rules.py`, `outreach-app/outreach/loader.py`, and `outreach-app/outreach/views.py`. The cleaner creates one listen count per accepted event and applies the UUID syntax rule; the loader groups by submitted version text; the detail view labels those strings as free text.
 
 ## 5. The verdict: prove or break
 
-**Break for a support-retention decision; keep as an investigation aid.** Morgan is better off using the app to narrow which reported Pano version to inspect than manually grouping ListenBrainz exports. Morgan is not better off using this app alone to decide whether to keep or drop compatibility work. The app cannot measure the support burden or the consequences for users who are absent from ListenBrainz. Morgan must not treat version traffic as a census, support-ticket count, or proof that a version is healthy or defective.
+**Break for a support-retention decision; keep as an investigation aid.** Morgan is better off using the version breakdown to identify which reported Pano versions appear in the sample than manually grouping the export. The distribution is heavily concentrated in version 4.42, but that does not show whether users of older versions need support. Morgan is not better off using the app alone to decide whether to keep or drop compatibility work. The app cannot measure support burden or consequences for users absent from ListenBrainz. Morgan must not treat version traffic as an installation census, support-ticket count, or proof that a version is healthy or defective.
 
-No new change request is proposed: the missing evidence is support and installation data, which this ListenBrainz dataset does not contain. The team's existing CR-05 and CR-06 address version-gap ranking and metric context; neither would turn sampled listens into support-demand evidence. The final PDF remains a draft until a live-app screenshot can be added.
+No new change request is proposed: the missing evidence is support and installation data, which this ListenBrainz dataset does not contain. The team's existing CR-05 and CR-06 address version-gap ranking and metric context; neither would turn sampled listens into support-demand evidence. The figure is independently calculated from the sample and is not a capture of the public app.
