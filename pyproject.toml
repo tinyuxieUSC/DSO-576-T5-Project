@@ -1,0 +1,18 @@
+[project]
+name = "client-metadata-outreach-prioritizer"
+version = "0.1.0"
+description = "Aggregate evidence for ListenBrainz metadata outreach planning"
+requires-python = ">=3.11"
+dependencies = [
+  "pandas==3.0.6",
+  "pyarrow==25.0.1",
+  "streamlit==1.66.0",
+  "altair==6.3.0",
+  "psutil==7.2.2",
+]
+
+[dependency-groups]
+dev = ["pytest==9.1.1"]
+
+[tool.uv]
+package = false

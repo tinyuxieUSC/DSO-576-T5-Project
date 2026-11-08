@@ -13,9 +13,12 @@ SCENARIO_WARNING = 'Hypothetical scenario only. The target may not be attainable
 NONADDITIVE = 'An account may use more than one client, so account counts across clients are not additive.'
 FORMULA = ('score = w × log1p(affected accounts)/log1p(max affected accounts) + '
            '(1−w) × log1p(unusable IDs)/log1p(max unusable IDs); zero maxima contribute zero. '
-           'Additional tagged listens = round(min(unusable IDs, max(0, target × total − valid IDs))); ties to even.')
+           'Approximate additions = round(min(unusable IDs, max(0, target × total − valid IDs))); ties to even. '
+           'Achieved coverage = (valid IDs + approximate additions) / total. '
+           'Minimum additions = max(0, ceil(target × total − valid IDs)), capped at unusable IDs; decimal target arithmetic.')
 PUBLIC_COLUMNS = set(METRIC_DTYPES) | {'rank','score','client_version','week_start','partial_week',
-                                     'reach_weight','target_coverage','additional_tagged_listens'}
+                                     'reach_weight','target_coverage','additional_tagged_listens',
+                                     'achieved_coverage','minimum_additions_to_target'}
 METADATA_COLUMNS = {'mode','fingerprint','playback_start','playback_end','source_files','source_intervals','accepted_events',
                     'exclude_importers','minimum_accounts','account_floor','volume_weight','methodology',
                     'limitations','account_counts_note','warnings','version_evidence','comparison_clients'}
@@ -46,9 +49,14 @@ def briefing_markdown(table, metadata):
 
 
 def table_config():
-    return {'coverage':st.column_config.NumberColumn('Coverage',format='percent',step=0.001,width='small'),
+    return {'coverage':st.column_config.NumberColumn('Coverage',format='percent',step=0.000001,width='small'),
             'score':st.column_config.NumberColumn('Score',format='%.3f'),
-            'target_coverage':st.column_config.NumberColumn('Target',format='percent',step=0.001),
+            'target_coverage':st.column_config.NumberColumn('Target',format='percent',step=0.000001),
+            'achieved_coverage':st.column_config.NumberColumn('Coverage after approximate additions',format='percent',step=0.000001),
+            'minimum_additions_to_target':st.column_config.NumberColumn('Minimum additions to reach target',format='localized'),
+            'additional_tagged_listens':st.column_config.NumberColumn('Approximate additions',format='localized'),
+            'absent_recording_mbid':st.column_config.NumberColumn('Absent IDs',format='localized'),
+            'invalid_recording_mbid':st.column_config.NumberColumn('Invalid IDs',format='localized'),
             'client':st.column_config.TextColumn('Submission client',width='medium'),
             'missing_recording_mbid':st.column_config.NumberColumn('Without usable MBID',format='localized'),
             'total_listens':st.column_config.NumberColumn('Listens',format='localized'),
@@ -66,7 +74,8 @@ def shortlist(ranked, size):
     a.metric('Eligible clients',f'{len(ranked):,}')
     b.metric('Observed listens · eligible clients',f'{ranked.total_listens.sum():,}')
     c.metric('Without usable recording MBID',f'{ranked.missing_recording_mbid.sum():,}')
-    cols = ['rank','client','client_type','score','total_listens','distinct_accounts','affected_accounts','missing_recording_mbid','coverage']
+    cols = ['rank','client','client_type','score','total_listens','distinct_accounts','affected_accounts',
+            'missing_recording_mbid','absent_recording_mbid','invalid_recording_mbid','coverage']
     top = ranked.head(size)[cols]
     styled = top.style.apply(lambda row: ['background-color: rgba(82, 169, 149, .12)' if row['rank'] <= 3 else '' for _ in row], axis=1)
     event = st.dataframe(styled,hide_index=True,width='stretch',column_config=table_config(),
@@ -165,8 +174,11 @@ def comparison(scenarios):
         return
     st.altair_chart(scenario_chart(scenarios),width='stretch')
     st.caption('Solid bars: observed valid and unusable identifiers. Pale dashed outlines: hypothetical additions, drawn separately from observed counts.')
-    st.dataframe(scenarios[['client','distinct_accounts','affected_accounts','total_listens','coverage','target_coverage','additional_tagged_listens']],
+    st.dataframe(scenarios[['client','total_listens','coverage','target_coverage','additional_tagged_listens',
+                           'achieved_coverage','minimum_additions_to_target']],
                  hide_index=True,width='stretch',column_config=table_config())
+    st.caption('Approximate additions retain nearest-integer rounding. Achieved coverage uses that rounded count. '
+               'Minimum additions uses the smallest whole count reaching at least the target. All are hypothetical; none establish feasibility.')
     st.caption(FORMULA)
 
 
@@ -174,8 +186,20 @@ def briefing(ranked,row,scenario,metadata):
     st.subheader('Prepare an evidence briefing')
     st.caption(NONADDITIVE)
     st.download_button('Download all eligible clients · CSV',export_table(ranked,metadata),'eligible-clients.csv','text/csv')
+    if len(scenario) >= 2:
+        st.markdown('### Complete comparison briefing')
+        # Version details belong to the inspected client, not to every comparison candidate.
+        comparison_metadata = {k:v for k,v in metadata.items() if k != 'version_evidence'}
+        st.dataframe(scenario[['client','total_listens','coverage','target_coverage',
+                               'additional_tagged_listens','achieved_coverage','minimum_additions_to_target']],
+                     hide_index=True,width='stretch',column_config=table_config())
+        a,b = st.columns(2)
+        a.download_button('Download comparison · CSV',export_table(scenario,comparison_metadata),
+                          'comparison-briefing.csv','text/csv')
+        b.download_button('Download comparison · Markdown',briefing_markdown(scenario,comparison_metadata),
+                          'comparison-briefing.md','text/markdown')
     if row is None:
-        st.info('Select a client to generate its outreach briefing.')
+        st.info('Select a client to generate an additional individual-client briefing.')
         return
     selected = scenario.loc[scenario.client == row['client']] if len(scenario) else pd.DataFrame()
     if selected.empty:

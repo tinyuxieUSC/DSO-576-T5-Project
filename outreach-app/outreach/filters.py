@@ -1,6 +1,7 @@
 """Pure aggregate calculations; no file, identifier, or UI access."""
 from __future__ import annotations
 import math
+from decimal import Decimal, ROUND_CEILING
 import pandas as pd
 from .data_rules import NOT_REPORTED
 
@@ -49,7 +50,17 @@ def estimate_scenarios(metrics: pd.DataFrame, clients: list[str], target: float)
     result['target_coverage'] = target
     if result.empty:
         result['additional_tagged_listens'] = pd.Series(dtype='int64')
+        result['achieved_coverage'] = pd.Series(dtype='float64')
+        result['minimum_additions_to_target'] = pd.Series(dtype='int64')
         return result
     result['additional_tagged_listens'] = result.apply(
         lambda r: round(min(r.missing_recording_mbid, max(0, target * r.total_listens - r.with_recording_mbid))), axis=1).astype('int64')
+    result['achieved_coverage'] = result.apply(
+        lambda r: (r.with_recording_mbid + r.additional_tagged_listens) / r.total_listens if r.total_listens else 0.0,
+        axis=1)
+    # Decimal avoids treating an exact target such as 7% of 100 as 7.000000000000001.
+    result['minimum_additions_to_target'] = result.apply(
+        lambda r: min(int(r.missing_recording_mbid), max(0, int(
+            (Decimal(str(target)) * int(r.total_listens) - int(r.with_recording_mbid))
+            .to_integral_value(rounding=ROUND_CEILING)))), axis=1).astype('int64')
     return result.sort_values(['additional_tagged_listens', 'client'], ascending=[False, True])

@@ -1,0 +1,162 @@
+{
+  "source_sha256": "ac66335410c79c991c3b9609bbe0829789399be056652626119a5497bc84f0ee",
+  "events": 21276,
+  "start": "2005-02-13",
+  "end": "2026-09-03",
+  "source_totals": {
+    "total_listens": 21276,
+    "with_recording_mbid": 654,
+    "absent_recording_mbid": 20622,
+    "invalid_recording_mbid": 0,
+    "distinct_accounts": 4060,
+    "affected_accounts": 3546,
+    "missing_recording_mbid": 20622,
+    "coverage": 0.03073886068809927
+  },
+  "queries": [
+    {
+      "name": "default",
+      "eligible_clients": 5,
+      "aggregate_and_rank_check": "PASS"
+    },
+    {
+      "name": "include-importers",
+      "eligible_clients": 27,
+      "aggregate_and_rank_check": "PASS"
+    },
+    {
+      "name": "single-playback-day",
+      "eligible_clients": 5,
+      "aggregate_and_rank_check": "PASS"
+    },
+    {
+      "name": "empty-threshold",
+      "eligible_clients": 0,
+      "aggregate_and_rank_check": "PASS"
+    }
+  ],
+  "version_and_measured_week_checks": "PASS for every default eligible client",
+  "scenario_checks": [
+    {
+      "target_percent": 1,
+      "clients_checked": 5
+    },
+    {
+      "target_percent": 75,
+      "clients_checked": 5
+    },
+    {
+      "target_percent": 100,
+      "clients_checked": 5
+    }
+  ],
+  "default_metrics": [
+    {
+      "client": "pano scrobbler",
+      "client_type": "regular",
+      "unknown_account_listens": 0,
+      "unknown_version_listens": 0,
+      "first_play_date": "2026-02-24",
+      "last_play_date": "2026-09-03",
+      "total_listens": 520,
+      "with_recording_mbid": 0,
+      "absent_recording_mbid": 520,
+      "invalid_recording_mbid": 0,
+      "missing_recording_mbid": 520,
+      "coverage": 0.0,
+      "distinct_accounts": 360,
+      "affected_accounts": 360
+    },
+    {
+      "client": "navidrome",
+      "client_type": "regular",
+      "unknown_account_listens": 0,
+      "unknown_version_listens": 0,
+      "first_play_date": "2026-07-08",
+      "last_play_date": "2026-09-03",
+      "total_listens": 889,
+      "with_recording_mbid": 469,
+      "absent_recording_mbid": 420,
+      "invalid_recording_mbid": 0,
+      "missing_recording_mbid": 420,
+      "coverage": 0.5275590551181102,
+      "distinct_accounts": 719,
+      "affected_accounts": 318
+    },
+    {
+      "client": "listenbrainz",
+      "client_type": "unknown",
+      "unknown_account_listens": 0,
+      "unknown_version_listens": 1090,
+      "first_play_date": "2026-08-27",
+      "last_play_date": "2026-09-03",
+      "total_listens": 1090,
+      "with_recording_mbid": 0,
+      "absent_recording_mbid": 1090,
+      "invalid_recording_mbid": 0,
+      "missing_recording_mbid": 1090,
+      "coverage": 0.0,
+      "distinct_accounts": 765,
+      "affected_accounts": 765
+    },
+    {
+      "client": "listenbrainz android",
+      "client_type": "regular",
+      "unknown_account_listens": 0,
+      "unknown_version_listens": 0,
+      "first_play_date": "2026-09-03",
+      "last_play_date": "2026-09-03",
+      "total_listens": 305,
+      "with_recording_mbid": 0,
+      "absent_recording_mbid": 305,
+      "invalid_recording_mbid": 0,
+      "missing_recording_mbid": 305,
+      "coverage": 0.0,
+      "distinct_accounts": 211,
+      "affected_accounts": 211
+    },
+    {
+      "client": "web scrobbler",
+      "client_type": "regular",
+      "unknown_account_listens": 0,
+      "unknown_version_listens": 0,
+      "first_play_date": "2026-09-03",
+      "last_play_date": "2026-09-03",
+      "total_listens": 317,
+      "with_recording_mbid": 0,
+      "absent_recording_mbid": 317,
+      "invalid_recording_mbid": 0,
+      "missing_recording_mbid": 317,
+      "coverage": 0.0,
+      "distinct_accounts": 166,
+      "affected_accounts": 166
+    }
+  ],
+  "default_ranking": [
+    {
+      "rank": 1,
+      "client": "listenbrainz",
+      "score": 1.0
+    },
+    {
+      "rank": 2,
+      "client": "pano scrobbler",
+      "score": 0.8905289481130256
+    },
+    {
+      "rank": 3,
+      "client": "navidrome",
+      "score": 0.8659829712533327
+    },
+    {
+      "rank": 4,
+      "client": "listenbrainz android",
+      "score": 0.8124141099958595
+    },
+    {
+      "rank": 5,
+      "client": "web scrobbler",
+      "score": 0.7972006226588504
+    }
+  ]
+}

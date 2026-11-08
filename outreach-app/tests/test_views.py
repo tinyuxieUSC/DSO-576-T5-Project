@@ -27,7 +27,7 @@ def test_exports_and_chart(fixture_data,january):
     assert (scenarios.additional_tagged_listens<=scenarios.missing_recording_mbid).all()
 
 
-def test_app_interactions(monkeypatch):
+def test_app_interactions(monkeypatch, portable_ui):
     monkeypatch.setattr(sys,'argv',['app.py'])
     app=AppTest.from_file(Path('app.py').resolve(),default_timeout=30).run()
     assert not app.exception
@@ -76,7 +76,7 @@ def test_fixture_screens(monkeypatch,fixture_data):
     assert scenario.set_index('client').additional_tagged_listens.to_dict()=={'alpha':15,'beta':92}
 
 
-def test_ui_controls_do_not_read_raw_sources(monkeypatch):
+def test_ui_controls_do_not_read_raw_sources(monkeypatch, portable_ui):
     monkeypatch.setattr(sys,'argv',['app.py'])
     original=Path.open
     def guard(self,*args,**kwargs):

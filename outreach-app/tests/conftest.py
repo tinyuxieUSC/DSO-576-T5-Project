@@ -36,3 +36,14 @@ def fixture_data(tmp_path):
 @pytest.fixture
 def january():
     return DataFilters(date(2026,1,1), date(2026,1,31), True, 2)
+
+
+@pytest.fixture
+def portable_ui(monkeypatch):
+    """Use the repository's real portable sample, never a sibling dataset or stale cache."""
+    from types import SimpleNamespace
+    import outreach.setup as setup
+    from outreach.prepare import prepare_data
+    config_path = Path('config.cloud.toml').resolve()
+    prepare_data(setup.load_config(config_path))
+    monkeypatch.setattr(setup, 'cli_args', lambda: SimpleNamespace(config=str(config_path), mode='sample'))
