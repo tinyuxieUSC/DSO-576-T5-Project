@@ -46,9 +46,9 @@ def briefing_markdown(table, metadata):
 
 
 def table_config():
-    return {'coverage':st.column_config.NumberColumn('Coverage',format='percent',step=0.1,width='small'),
+    return {'coverage':st.column_config.NumberColumn('Coverage',format='percent',step=0.001,width='small'),
             'score':st.column_config.NumberColumn('Score',format='%.3f'),
-            'target_coverage':st.column_config.NumberColumn('Target',format='percent',step=0.1),
+            'target_coverage':st.column_config.NumberColumn('Target',format='percent',step=0.001),
             'client':st.column_config.TextColumn('Submission client',width='medium'),
             'missing_recording_mbid':st.column_config.NumberColumn('Without usable MBID',format='localized'),
             'total_listens':st.column_config.NumberColumn('Listens',format='localized'),
