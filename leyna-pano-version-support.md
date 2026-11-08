@@ -1,6 +1,6 @@
 # Case: Morgan, a Pano Scrobbler maintainer, and older-version compatibility
 
-> Working case. The earlier Navidrome version-investigation idea is withdrawn because Zhongze's case on `case-live-evidence` covers choosing a Navidrome version to investigate for unusable recording IDs. This is a different proposed decision: whether observed use of older Pano versions justifies investigating compatibility needs before the maintainer decides where to spend support work. Parts 4 and 5 remain Leyna's judgments. The final hand-in belongs in a separate `leyna-pano-version-support-final.md` and PDF.
+> Working file. The first idea, investigating Navidrome versions, was withdrawn after comparing it with Zhongze's case on `case-live-evidence`, which makes the same version-priority decision for Navidrome. This case asks a different question about Pano: whether observed version traffic justifies investigation before deciding how much compatibility work to do. The final memo is in `leyna-pano-version-support-final.md`.
 
 ## 1. The person and the decision
 
@@ -8,42 +8,42 @@ Morgan is a fictional Pano Scrobbler maintainer reviewing where to spend limited
 
 ## 2. Morgan's real situation and alternatives
 
-Pano's official release notes show changes and fixes attached to numbered releases, while its public issue tracker records version-specific reports. In one report, a user said AutoShazam detections stopped scrobbling after Pano updated to 3.38, and that 3.37 still worked; the maintainer replied that a fix would come in the next update. This is evidence that a version-specific report can be investigated, not evidence that an older Pano release currently needs support or that ListenBrainz traffic measures the support burden.
+Pano's official release notes show changes and fixes attached to numbered releases, while its public issue tracker records version-specific reports. In one report, a user said AutoShazam detections stopped scrobbling after Pano updated to 3.38, and that 3.37 still worked. The maintainer replied that a fix would come in the next update; a later comment in that issue said the problem continued on 3.39. This historical thread shows why a developer may investigate behavior across versions. It does not show that an older Pano release currently needs support or that ListenBrainz traffic measures the support burden.
 
-ListenBrainz documents `submission_client_version` as the version of the software submitting a listen. That makes the version field relevant to Morgan's screening question. Morgan's alternatives are to inspect release notes and issue reports, reproduce the behavior on the relevant Pano build and operating system, review support requests and logs, and ask affected users for details. The app can summarize observed submissions but cannot replace these checks.
+ListenBrainz defines `submission_client_version` as the version of the software submitting a listen. Version-level submissions therefore provide a possible usage signal. Morgan's alternatives are to inspect release notes and issue reports, reproduce the behavior on the relevant Pano build and operating system, review current support requests and logs, and ask affected users for details. The app summarizes observed submissions but cannot replace these checks.
 
 **Sources:**
 
-- [Pano Scrobbler releases](https://github.com/kawaiiDango/pano-scrobbler/releases), Pano Scrobbler's official GitHub repository: release notes are organized by version and include fixes and behavior changes.
-- [Version 3.38 not scrobbling from Shazam](https://github.com/kawaiiDango/pano-scrobbler/issues/488), Pano Scrobbler's official issue tracker: a user reported that AutoShazam detections stopped scrobbling after an update to 3.38 and said 3.37 worked; the maintainer replied that a fix would be in the next update.
-- [JSON Documentation](https://listenbrainz.readthedocs.io/en/latest/users/json.html), ListenBrainz documentation: defines `submission_client_version` as the version of the client submitting the listen and distinguishes client-submitted IDs from server-resolved mappings.
+- [Pano Scrobbler releases](https://github.com/kawaiiDango/pano-scrobbler/releases), Pano Scrobbler's official GitHub repository: versioned release notes list fixes and behavior changes.
+- [Version 3.38 not scrobbling from Shazam](https://github.com/kawaiiDango/pano-scrobbler/issues/488), Pano Scrobbler's official issue tracker: a user reported an AutoShazam scrobbling problem after updating to 3.38 and said 3.37 worked; the maintainer discussed a fix, and a later commenter reported the problem on 3.39.
+- [JSON Documentation](https://listenbrainz.readthedocs.io/en/latest/users/json.html), ListenBrainz documentation: defines `submission_client_version` as the submitting client's version and distinguishes IDs supplied by a client from server-resolved mappings.
 
 ## 3. The app in use
 
-**Live link:** [Client Metadata Outreach Prioritizer](https://appapppy-mdilrzqijilc29whq52tc2.streamlit.app/). This is the URL printed in Gigi's example PDF. I could not open it with the available browser tool, so the current public deployment still needs to be checked.
+**Live link:** [Client Metadata Outreach Prioritizer](https://appapppy-mdilrzqijilc29whq52tc2.streamlit.app/).
 
-**What Morgan selects:** In the live app, choose the displayed playback-date range and record it here. Select `pano scrobbler` for client detail; record whether classified importers are excluded and the minimum-account setting. Inspect the version table and weekly playback evidence. Keep the screenshot's settings visible.
+**What Morgan would select:** Choose `pano scrobbler` in client detail, record the displayed playback-date range, and note whether classified importers are excluded and the minimum-account setting. Inspect its version table and weekly playback evidence. Keep the live selections visible in the screenshot.
 
-**Live-app screenshot:** Still needed. Capture the public app itself and save it as `screenshots/pano-version.png` beside this case. Do not use a local run or recreate the screen.
+**What was verified in this session:** A direct unauthenticated request to the public URL redirected to Streamlit authentication. I could not inspect live settings or capture a screenshot, and did not use a local app. The checked-in `outreach-app/config.toml` defaults to sample mode, observed playback-date bounds, importer exclusion, a minimum distinct-account setting of 100, a 50% reach weight, and a 75% scenario target; these are repository defaults and were not verified against the deployment.
 
-**What the app shows, according to the code:** The client-detail view displays Pano's aggregate listen and account measures, MBID coverage, a version breakdown, weekly playback evidence, and ranking sensitivity. Version labels are preserved as free text; the view reports what share of Pano listens have a reported version. Weekly counts use UTC weeks, and partial edge weeks are flagged. These are observed ListenBrainz submissions under the selected filters, not a count of all installed Pano versions, a support-ticket rate, or a measure of compatibility costs.
+**Live screenshot:** Not available in this draft. Add a genuine capture from the public app as `screenshots/pano-version.png` when the deployment can be opened. No screen has been redrawn or substituted.
+
+**What the code says the app shows:** The client-detail view displays aggregate listens, distinct and affected accounts, recording-MBID coverage, version evidence, weekly playback evidence, and ranking sensitivity. Version labels remain free text, with the known-version share displayed. Weekly evidence uses UTC weeks and marks partial edge weeks. These measures describe selected ListenBrainz submissions, not all Pano installations, support requests, or compatibility costs.
 
 ## 4. Reading the result for Morgan's decision
 
-**Does the number measure what Morgan cares about?** Leyna: say whether observed ListenBrainz listens by reported version are useful for deciding which compatibility question to investigate. The rows contain neither version-specific support requests nor the cost of supporting a release. The number can indicate observed use in this sample, but decide whether it measures Morgan's actual decision well enough.
+**Does the number measure what Morgan cares about?** Only partly. ListenBrainz listens grouped by reported Pano version can show that some submissions in the selected data carry that version label. The data do not count active installations, support incidents, reproduction rates, engineering effort, or the number of users unable to upgrade. Those missing measures are central to a decision about continued compatibility support. I would use version traffic to choose what to investigate, not as the support decision itself.
 
-**Who is in the rows, and who is not?** Leyna: describe the selected ListenBrainz submissions and filters, then identify a relevant group missing from them. The app's stated limitation is that observed submissions are an incomplete sample of playback history and client users. Version labels can also be unknown, and the app's own view says the version strings remain free text.
+**Who is in the rows, and who is not?** A source row is an accepted submitted listen event, not a unique installation, user, bug, or support request. The query applies the selected playback dates and may exclude clients classified as importers. Distinct-account metrics cannot include events with no valid account key. The app states that observed ListenBrainz submissions are an incomplete sample of playback history and client users. Pano users who do not submit to ListenBrainz, plus unknown or inconsistent version labels, are missing from version-specific conclusions.
 
-**What outside the data matters to this decision?** Leyna: decide which additional evidence matters for Morgan. Candidates include Pano's release notes and issue reports, current support requests, operating-system versions, reproducible tests on older builds, the maintainer's available time, and whether affected users can upgrade.
+**What outside the data matters?** Release notes, open issues, support messages, crash logs, operating-system versions, reproducible tests on older Pano builds, whether users can upgrade, and the maintainer's available time. The official issue thread illustrates the value of version-specific reproduction; it does not establish current support needs for Pano.
 
-**What could Morgan wrongly conclude from it?** Leyna: name a tempting but unsupported conclusion. A version's observed ListenBrainz traffic alone cannot show that the release is compatible, unsupported, costly to maintain, or still used by all Pano users. Choose the misleading reading that matters most to Morgan and explain why the evidence does not support it.
+**What could Morgan wrongly conclude?** Morgan could treat a smaller observed count for an older version as proof that nobody needs it, or a larger count as proof that it is costly to support or currently broken. Neither follows: the sample is incomplete, and it contains neither support workload nor causal evidence about compatibility. Morgan should check actual reports and reproduce a concrete issue before deciding what to maintain.
 
-**Code evidence:** `outreach/loader.py` groups version evidence by the submitted `client_version` text and computes listen/account aggregates. `outreach/views.py` labels version strings as free text, displays known-version share, and presents weekly evidence. Add the live screenshot's actual values and any check you run; no Pano-specific result number has been inserted here.
+**Code evidence:** `outreach/data_rules.py` turns each accepted event into a listen count; `outreach/loader.py` groups version metrics using the submitted version text and applies date/importer filters; `outreach/views.py` describes version strings as free text and states that ListenBrainz submissions are an incomplete sample. No Pano-specific app result was claimed because the live view was inaccessible in this session.
 
 ## 5. The verdict: prove or break
 
-Leyna: compare the app with Morgan's alternatives in part 2. Decide whether Morgan is better off using the version detail to choose what to investigate, and state what Morgan must not conclude from the chart. Then either show why the app is as good as possible for this screening decision with its available data, or write a generalizable team change request. Do not turn the app's sampled version counts into a support policy without your own reasoning and evidence.
+**Break for a support-retention decision; keep as an investigation aid.** Morgan is better off using the app to narrow which reported Pano version to inspect than manually grouping ListenBrainz exports. Morgan is not better off using this app alone to decide whether to keep or drop compatibility work. The app cannot measure the support burden or the consequences for users who are absent from ListenBrainz. Morgan must not treat version traffic as a census, support-ticket count, or proof that a version is healthy or defective.
 
-```markdown
-Add a change request only if Leyna decides one is justified and writes it in the team's required format. Otherwise remove this box from the final memo.
-```
+No new change request is proposed: the missing evidence is support and installation data, which this ListenBrainz dataset does not contain. The team's existing CR-05 and CR-06 address version-gap ranking and metric context; neither would turn sampled listens into support-demand evidence. The final PDF remains a draft until a live-app screenshot can be added.
