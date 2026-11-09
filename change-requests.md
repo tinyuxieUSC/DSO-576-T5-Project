@@ -97,3 +97,12 @@ Request template:
 - **Change:** Add an aggregate breakdown of accounts with zero, one and multiple unusable-ID listens for the selected client and date range. This would help users distinguish a problem spread across many accounts from repeated missing IDs concentrated in fewer accounts.
 - **Priority:** medium
 - **Status:** open
+
+### CR-09: Separate screening rank from verified outreach eligibility
+
+- **From:** Rachel case, 2026-11-08
+- **Part:** Shortlist eligibility and client classification
+- **Evidence:** In Sample Data mode with playback dates `2005-02-13` through `2026-09-03`, classified-importer exclusion on, minimum accounts `100`, and reach weight `50%`, the independent sample calculation gives `listenbrainz` 1,090 listens, 765 distinct accounts, 765 affected accounts, 1,090 unusable IDs, and score `1.000`. The configuration lists exact importer and regular-client names; `listenbrainz` is in neither list and is therefore classified `unknown`. The loader excludes only `NOT_REPORTED` and clients below the account floor before ranking; `rank_clients` does not require `client_type == "regular"`.
+- **Change:** Keep unknown labels visible as investigation leads, but add a clearly separate outreach-eligibility status or filter that requires verified classification and ownership. Label the current rank as screening priority and do not imply that rank alone makes an unknown client an outreach candidate.
+- **Priority:** medium
+- **Status:** open
