@@ -109,7 +109,7 @@ def main():
             st.rerun()
     with tabs[1]:
         views.detail(row,versions,weeks,rank_sensitivity(metrics,[0,.5,1,reach]),distribution,
-                     f'{data.mode.upper()} sample scope; UTC playback {query.start} to {query.end}.' if data.mode == 'sample'
+                     f'SAMPLE mode; UTC playback {query.start} to {query.end}.' if data.mode == 'sample'
                      else f'FULL mode; UTC playback {query.start} to {query.end}.')
     with tabs[2]: views.comparison(scenarios)
     with tabs[3]: views.briefing(ranked,row,scenarios,metadata)
