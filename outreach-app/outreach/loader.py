@@ -6,6 +6,7 @@ import hashlib
 import json
 from pathlib import Path
 import shutil
+import sqlite3
 import tempfile
 import threading
 import time
@@ -296,3 +297,29 @@ def get_version_metrics(data: PreparedDataset, query: DataFilters, client: str) 
 
 def get_weekly_metrics(data: PreparedDataset, query: DataFilters, client: str) -> pd.DataFrame:
     return _detail(data, query, client, 'week_start')
+
+
+def get_account_distribution(data: PreparedDataset, query: DataFilters, client: str) -> dict:
+    """Count client accounts by total unusable-ID events, using a disk-backed exact aggregation.
+
+    Account keys never leave the temporary database. Counts deduplicate across every selected
+    date and version; missing account keys have no countable identity and are excluded.
+    """
+    parent = get_client_metrics(data, query)
+    if client not in set(parent.client):
+        return {'zero': 0, 'one': 0, 'multiple': 0}
+    if rss_mb() + 48 >= data.memory_budget_mb:
+        raise MemoryError('Insufficient memory for exact account distribution; increase query_memory_budget_mb.')
+    with tempfile.TemporaryDirectory(prefix='outreach-distribution-') as temp:
+        with sqlite3.connect(str(Path(temp) / 'accounts.sqlite')) as db:
+            db.execute('PRAGMA cache_size=-2048')
+            db.execute('CREATE TABLE accounts (account_key TEXT PRIMARY KEY, unusable INTEGER NOT NULL) WITHOUT ROWID')
+            for frame in selected_batches(data, query):
+                frame = frame.loc[(frame.client == client) & frame.account_key.notna(),
+                                  ['account_key', 'missing_mbid_listens', 'invalid_mbid_listens']]
+                rows = ((str(a), int(m) + int(i)) for a, m, i in frame.itertuples(index=False, name=None))
+                db.executemany('INSERT INTO accounts VALUES (?, ?) ON CONFLICT(account_key) DO UPDATE SET unusable=unusable+excluded.unusable', rows)
+                if rss_mb() + 8 >= data.memory_budget_mb:
+                    raise MemoryError('Exact account distribution exceeds the configured memory budget.')
+            zero, one, multiple = db.execute('SELECT COALESCE(SUM(unusable=0),0), COALESCE(SUM(unusable=1),0), COALESCE(SUM(unusable>1),0) FROM accounts').fetchone()
+    return {'zero': int(zero), 'one': int(one), 'multiple': int(multiple)}

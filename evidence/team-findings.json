@@ -1,0 +1,59 @@
+{
+  "account_distribution": {
+    "pano scrobbler": {
+      "zero": 0,
+      "one": 268,
+      "multiple": 92
+    },
+    "navidrome": {
+      "zero": 401,
+      "one": 279,
+      "multiple": 39
+    },
+    "listenbrainz": {
+      "zero": 0,
+      "one": 557,
+      "multiple": 208
+    },
+    "listenbrainz android": {
+      "zero": 0,
+      "one": 150,
+      "multiple": 61
+    },
+    "web scrobbler": {
+      "zero": 0,
+      "one": 107,
+      "multiple": 59
+    }
+  },
+  "rankings": {
+    "listenbrainz": {
+      "rank_0": 1,
+      "rank_50": 1,
+      "rank_100": 1
+    },
+    "pano scrobbler": {
+      "rank_0": 2,
+      "rank_50": 2,
+      "rank_100": 2
+    },
+    "navidrome": {
+      "rank_0": 3,
+      "rank_50": 3,
+      "rank_100": 3
+    },
+    "listenbrainz android": {
+      "rank_0": 5,
+      "rank_50": 4,
+      "rank_100": 4
+    },
+    "web scrobbler": {
+      "rank_0": 4,
+      "rank_50": 5,
+      "rank_100": 5
+    }
+  },
+  "version_gap_reconciliation": "PASS",
+  "method": "Independent CSV counters by client, version and pseudonymous account; separate log-rank computation",
+  "status": "PASS"
+}

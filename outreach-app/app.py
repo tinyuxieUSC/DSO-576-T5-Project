@@ -3,7 +3,7 @@ from datetime import date
 from pathlib import Path
 import streamlit as st
 from outreach.setup import load_config, cli_args, DataFilters
-from outreach.loader import open_prepared, get_data_status, get_client_metrics, get_version_metrics, get_weekly_metrics
+from outreach.loader import open_prepared, get_data_status, get_client_metrics, get_version_metrics, get_weekly_metrics, get_account_distribution
 from outreach.filters import rank_clients, rank_sensitivity, estimate_scenarios
 from outreach import views
 
@@ -20,6 +20,11 @@ def client_query(fingerprint,mode,query,budget,_data):
 @st.cache_data(show_spinner=False,max_entries=64)
 def detail_query(fingerprint,mode,query,client,grouping,budget,_data):
     return (get_version_metrics if grouping=='version' else get_weekly_metrics)(_data,query,client)
+
+
+@st.cache_data(show_spinner=False,max_entries=64)
+def distribution_query(fingerprint,mode,query,client,budget,_data):
+    return get_account_distribution(_data,query,client)
 
 
 def main():
@@ -77,10 +82,11 @@ def main():
         st.caption(views.FORMULA)
     scenarios=estimate_scenarios(ranked,clients,target)
     row=ranked.loc[ranked.client==selected].iloc[0].to_dict() if selected in choices else None
-    versions=weeks=None
+    versions=weeks=distribution=None
     try:
         if row:
             versions=detail_query(data.fingerprint,data.mode,query,selected,'version',data.memory_budget_mb,data)
+            distribution=distribution_query(data.fingerprint,data.mode,query,selected,data.memory_budget_mb,data)
             if (query.end-query.start).days>=7:
                 weeks=detail_query(data.fingerprint,data.mode,query,selected,'week',data.memory_budget_mb,data)
     except (MemoryError,OSError,ValueError) as e:
@@ -101,7 +107,10 @@ def main():
             # Apply before the next run's selector is instantiated.
             st.session_state['_pending_client']=clicked
             st.rerun()
-    with tabs[1]: views.detail(row,versions,weeks,rank_sensitivity(metrics,[0,.5,1,reach]))
+    with tabs[1]:
+        views.detail(row,versions,weeks,rank_sensitivity(metrics,[0,.5,1,reach]),distribution,
+                     f'{data.mode.upper()} sample scope; UTC playback {query.start} to {query.end}.' if data.mode == 'sample'
+                     else f'FULL mode; UTC playback {query.start} to {query.end}.')
     with tabs[2]: views.comparison(scenarios)
     with tabs[3]: views.briefing(ranked,row,scenarios,metadata)
 

@@ -5,7 +5,7 @@ import hashlib
 import pandas as pd
 import altair as alt
 import streamlit as st
-from .filters import METRIC_DTYPES
+from .filters import METRIC_DTYPES, ranking_comparison
 
 LIMITATION = ('Observed ListenBrainz submissions are an incomplete sample of playback history and client users. '
               'Missing or invalid identifiers do not establish client causation, current maintainer activity, or feasibility of a fix.')
@@ -65,8 +65,9 @@ def table_config():
 
 
 def shortlist(ranked, size):
-    st.subheader('Find the next pilot partner')
+    st.subheader('Screen clients to investigate')
     st.write('Compare affected-account reach and listens without a usable recording MBID. Select a row or point to inspect a candidate.')
+    st.caption('Screening rank is not verified outreach eligibility. Confirm ownership and a contact route separately; an unknown classification is not a verified client type.')
     if ranked.empty:
         st.info('No named clients meet these filters. Lower the minimum accounts, include importers, or widen the playback dates.')
         return None
@@ -74,13 +75,21 @@ def shortlist(ranked, size):
     a.metric('Eligible clients',f'{len(ranked):,}')
     b.metric('Observed listens · eligible clients',f'{ranked.total_listens.sum():,}')
     c.metric('Without usable recording MBID',f'{ranked.missing_recording_mbid.sum():,}')
-    cols = ['rank','client','client_type','score','total_listens','distinct_accounts','affected_accounts',
+    ranked = ranked.assign(outreach_status='Not verified')
+    cols = ['rank','client','client_type','outreach_status','score','total_listens','distinct_accounts','affected_accounts',
             'missing_recording_mbid','absent_recording_mbid','invalid_recording_mbid','coverage']
     top = ranked.head(size)[cols]
     styled = top.style.apply(lambda row: ['background-color: rgba(82, 169, 149, .12)' if row['rank'] <= 3 else '' for _ in row], axis=1)
     event = st.dataframe(styled,hide_index=True,width='stretch',column_config=table_config(),
                          on_select='rerun',selection_mode='single-row',key='shortlist_table')
     st.caption(f'Table: top {min(size,len(ranked))}. Scatter and selectors: all {len(ranked)} eligible clients. Unknown classification means unverified, not regular.')
+    with st.expander('Compare rankings across reach weights'):
+        comparison = ranking_comparison(ranked)
+        st.dataframe(comparison, hide_index=True, width='stretch', column_config={**table_config(),
+            'rank_0': st.column_config.NumberColumn('Rank: 0% reach'),
+            'rank_50': st.column_config.NumberColumn('Rank: 50% reach'),
+            'rank_100': st.column_config.NumberColumn('Rank: 100% reach')})
+        st.caption('The same eligible population and filters are used in each column. At 0% the score emphasizes unusable-ID volume; at 100% it emphasizes affected accounts. Counts explain why priorities can change.')
     selection = alt.selection_point(name='candidate',fields=['client'],on='click',clear='dblclick')
     chart = alt.Chart(ranked).mark_circle(opacity=.75,stroke='white',strokeWidth=1).encode(
         x=alt.X('affected_accounts:Q',title='Affected accounts',scale=alt.Scale(zero=True)),
@@ -106,7 +115,7 @@ def shortlist(ranked, size):
     return None
 
 
-def detail(row,versions,weeks,sensitivity):
+def detail(row,versions,weeks,sensitivity,distribution=None,scope=None):
     if row is None:
         st.info('Select a client from the shortlist or the client selector to inspect its evidence.')
         return
@@ -123,9 +132,22 @@ def detail(row,versions,weeks,sensitivity):
         color=alt.Color('status:N',scale=alt.Scale(range=['#398b7d','#d8a36e']),title=None),
         tooltip=['status',alt.Tooltip('listens:Q',format=',.0f')]).properties(height=90),width='stretch')
     st.caption(f"Denominator: {row['total_listens']:,} listens. Absent IDs: {row['absent_recording_mbid']:,}; populated invalid IDs: {row['invalid_recording_mbid']:,}. UUID syntax does not verify MusicBrainz existence. Unknown-account listens: {row['unknown_account_listens']:,}.")
+    st.caption(f"Coverage calculation: {row['with_recording_mbid']:,} / {row['total_listens']:,} = {row['coverage']:.1%}. {scope or ''} This is submitted UUID syntax, not verified recording identity.")
+    st.info('Screening result only: classification does not verify ownership, maintainer activity, or a contact route. Confirm those separately before outreach.')
+    if distribution is not None:
+        st.markdown('**Observed accounts by number of unusable-ID listens**')
+        st.dataframe(pd.DataFrame([{'Zero': distribution['zero'], 'One': distribution['one'],
+                                    'Two or more': distribution['multiple']}]), hide_index=True, width='stretch')
+        st.caption('An account is counted once across the selected dates and versions. Events without a valid account key are excluded from this account distribution.')
     st.markdown('**Version evidence**')
     known = 1-row['unknown_version_listens']/row['total_listens']
     st.caption(f'Known version share: {known:.1%}; unknown: {1-known:.1%}. Versions remain free text.')
+    if len(versions):
+        st.markdown('**Version gaps: largest first**')
+        version_gaps = versions.sort_values(['missing_recording_mbid', 'client_version'], ascending=[False, True])
+        st.dataframe(version_gaps[['client_version', 'total_listens', 'missing_recording_mbid', 'coverage']],
+                     hide_index=True, width='stretch', column_config=table_config())
+        st.caption('A reported version is not proof of a software defect, an installed-user count, or a verified release identity.')
     st.dataframe(versions,hide_index=True,width='stretch',column_config=table_config())
     if weeks is not None and len(weeks):
         st.markdown('**Weekly playback evidence**')

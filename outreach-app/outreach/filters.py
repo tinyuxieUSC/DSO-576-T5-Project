@@ -43,6 +43,18 @@ def rank_sensitivity(metrics: pd.DataFrame, weights: list[float]) -> pd.DataFram
     return pd.concat(result, ignore_index=True) if result else pd.DataFrame(columns=['client', 'rank', 'score', 'reach_weight'])
 
 
+def ranking_comparison(metrics: pd.DataFrame) -> pd.DataFrame:
+    """Compare the same eligible clients under three explicit weight choices."""
+    if metrics.empty:
+        return pd.DataFrame(columns=['client', 'affected_accounts', 'missing_recording_mbid', 'rank_0', 'rank_50', 'rank_100'])
+    out = metrics[['client', 'affected_accounts', 'missing_recording_mbid']].copy()
+    unranked = metrics.drop(columns=['rank', 'score'], errors='ignore')
+    for weight, column in [(0, 'rank_0'), (.5, 'rank_50'), (1, 'rank_100')]:
+        ranks = rank_clients(unranked, weight)[['client', 'rank']].rename(columns={'rank': column})
+        out = out.merge(ranks, on='client', validate='one_to_one')
+    return out.sort_values(['rank_50', 'client']).reset_index(drop=True)
+
+
 def estimate_scenarios(metrics: pd.DataFrame, clients: list[str], target: float) -> pd.DataFrame:
     if not 0 <= target <= 1:
         raise ValueError('target: expected 0–1')

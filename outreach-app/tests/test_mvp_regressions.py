@@ -4,7 +4,8 @@ import io
 from pathlib import Path
 import pandas as pd
 from streamlit.testing.v1 import AppTest
-from outreach.filters import estimate_scenarios
+from outreach.filters import estimate_scenarios, ranking_comparison
+from outreach.loader import get_account_distribution
 from outreach.views import export_table, briefing_markdown
 
 
@@ -87,3 +88,38 @@ def test_portable_launcher_recovers_after_host_refreshes_source_timestamp(tmp_pa
     assert not app.exception
     assert not app.error
     assert len(app.tabs)==4
+
+
+def test_account_distribution_deduplicates_dates_and_versions(fixture_data, january):
+    # alpha: a1 has 15 missing across dates, a2 has zero, a3 has 5, a10 has 1.
+    assert get_account_distribution(fixture_data,january,'alpha') == {'zero':1,'one':1,'multiple':2}
+    assert get_account_distribution(fixture_data,january,'beta') == {'zero':0,'one':0,'multiple':2}
+    assert get_account_distribution(fixture_data,january,'solo') == {'zero':0,'one':0,'multiple':0}
+
+
+def test_all_client_ranking_comparison_uses_same_population():
+    metrics=pd.DataFrame([
+        {'client':'reach','affected_accounts':100,'missing_recording_mbid':10},
+        {'client':'volume','affected_accounts':10,'missing_recording_mbid':100}])
+    comparison=ranking_comparison(metrics).set_index('client')
+    assert comparison.loc['volume','rank_0']==1
+    assert comparison.loc['reach','rank_100']==1
+    assert comparison.loc['reach','affected_accounts']==100
+    assert comparison.loc['volume','missing_recording_mbid']==100
+
+
+def test_sample_screen_shows_team_case_findings(portable_ui):
+    app=AppTest.from_file(Path('app.py').resolve(),default_timeout=60).run()
+    assert not app.exception
+    rankings=next(d.value for d in app.dataframe if 'rank_0' in d.value.columns).set_index('client')
+    assert list(rankings.loc['web scrobbler',['rank_0','rank_50','rank_100']]) == [4,5,5]
+    assert list(rankings.loc['listenbrainz android',['rank_0','rank_50','rank_100']]) == [5,4,4]
+    shortlist=app.dataframe[0].value
+    assert set(shortlist['outreach_status']) == {'Not verified'}
+    app.selectbox[0].select('navidrome').run()
+    assert not app.exception
+    dist=next(d.value for d in app.dataframe if {'Zero','One','Two or more'} <= set(d.value.columns))
+    assert dist.iloc[0].to_dict() == {'Zero':401,'One':279,'Two or more':39}
+    versions=next(d.value for d in app.dataframe if list(d.value.columns) ==
+                  ['client_version','total_listens','missing_recording_mbid','coverage'])
+    assert versions.iloc[0].missing_recording_mbid == 295
