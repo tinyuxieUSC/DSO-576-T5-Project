@@ -1,11 +1,10 @@
-# Run the app
+# Run the portable app
 
-Paste this into Terminal:
+Use the top-level README. From the repository's top folder, run these commands in macOS Terminal or Windows PowerShell:
 
-```bash
-cd /Users/tinyux/Desktop/dso576/DSO-576-T5-Project/outreach-app
-source .venv/bin/activate
-python -m streamlit run app.py -- --config config.toml
+```text
+uv sync --locked
+uv run streamlit run streamlit_app.py
 ```
 
-Open http://localhost:8501. Press **Control+C** in Terminal to stop.
+This prepares and uses the bundled sample with `config.cloud.toml`, without a sibling dataset directory. The original `config.toml` is retained for advanced sample/full workflows using an external dataset. It is not the public app's configuration.

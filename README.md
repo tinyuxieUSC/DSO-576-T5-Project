@@ -1,216 +1,57 @@
-# DSO-576-T5 Project
+# Client Metadata Outreach Prioritizer
 
-## Public sample app and individual case
+A screening tool for a MetaBrainz outreach coordinator deciding which ListenBrainz client maintainers to investigate for a recording-identifier improvement pilot. It compares observed account reach, submitted-ID gaps, client versions, and hypothetical coverage scenarios. A ranking helps organize research; it does not establish client causation, a feasible intervention, or likely future gains.
 
-- [Open the live app](https://appapppy-mdilrzqijilc29whq52tc2.streamlit.app/). It runs from the `case-live-evidence` branch with `streamlit_app.py` and prepares the portable course sample on startup.
-- [Tinyu Xie's individual case PDF](cases/tinyu/tinyu-case-nora-pilot.pdf), [final memo](cases/tinyu/nora-pilot-final.md), and [verification notes](cases/tinyu/submission-check.md).
-- This deployment uses the complete course listens sample, not the full dump. See [sample provenance and fields](outreach-app/demo-input/README.md). It does not need a sibling dataset folder.
-- From the repository root, install `requirements.txt`, then run `python -m streamlit run streamlit_app.py`.
+## Open the app
 
+**[Public live app](https://appapppy-mdilrzqijilc29whq52tc2.streamlit.app/)** — no sign-in required. Deployed from this repository's `case-live-evidence` branch, entry point `streamlit_app.py`. Keep this deployment available through December 16, 2026.
 
-## Run the dashboard
+Start with the shortlist, inspect a client, compare two or three candidates, and download an aggregate evidence briefing. Approximate scenario additions, achieved coverage, and minimum additions to reach the selected target are separately labeled. The complete comparison export retains every selected candidate; the individual-client briefing remains available.
 
-All app code, configuration, tests, and build reports are in [`outreach-app/`](outreach-app/). See the [app README](outreach-app/README.md) for terminal setup, sample/full data commands, and troubleshooting.
+## Submission status
 
-From this repository folder:
+**Demo video: teammate-provided link pending.** Add the unlisted YouTube link here when the teammate supplies it, and verify it opens without sign-in. The team member is handling the video separately.
 
-```bash
-cd outreach-app
-uv run streamlit run app.py
-```
+**Validation:** `validation.pdf` is in the repository root, with four sections: Design, Cases, Numbers, Tests. Section 2 includes all five supplied cases: Nora, Morgan, Alex, Ana, and Rachel. The team should confirm author/case ownership and review the source cases and conclusions. The demo video link is still required before the final hand-in.
 
-Open http://localhost:8501. Press **Control+C** in Terminal to stop the app.
+## Data used by the live app
 
+The live app uses all **21,276 events in the course's uniform random listens sample**, not the entire raw daily dump or the full ListenBrainz population. It retains the five fields required by this app, removes user names and unused columns, and consistently replaces positive account numbers with local surrogate integers. Event counts, timestamps, client/version labels, recording IDs, and equality-based reach counts are preserved. Pseudonymization is not a claim of anonymity.
 
-## Team Members
+The sample can change every count, proportion, eligibility threshold result and ranking relative to full data. Its playback dates span 2005-02-13 through 2026-09-03; that does not make it a complete playback history. A submission-day dump includes historical imports. Classified importers are excluded by default; unclassified clients remain unverified. Recording-MBID coverage checks UUID syntax, not existence or correct recording identity. Account counts across clients are not additive.
 
-- tinyuxieUSC
-- giselleluk
-- leynanguyen0818
-- gigizhuwq
-- Zhongze Zhou
+Source and transformation details: [`outreach-app/demo-input/README.md`](outreach-app/demo-input/README.md). The portable sample is under 1 MB; no raw archives, external dataset folder, database account or service secret is needed. Private prepared files and a local HMAC secret are generated on first startup and are not included in the ZIP.
 
-## Pull, Commit, Push, and Resolve Git Issues
+## Run on a laptop
 
-Before starting work, open a terminal in the project folder and pull the latest
-changes from GitHub:
-
-```bash
-git pull origin main
-```
-
-If you are working on a different branch, replace `main` with your branch name.
-
-After editing and saving your files, check what changed:
-
-```bash
-git status
-```
-
-Stage your changes:
-
-```bash
-git add .
-```
-
-Commit the staged changes with a short, descriptive message:
-
-```bash
-git commit -m "Describe your changes"
-```
-
-Before pushing, pull once more in case a teammate pushed new work while you
-were editing:
-
-```bash
-git pull origin main
-```
-
-If there are no conflicts, push your commit:
-
-```bash
-git push origin main
-```
-
-### Common Git and Merge Scenarios
-
-#### 1. Merge conflict after `git pull`
-
-A merge conflict happens when Git cannot automatically combine your changes
-with a teammate's changes, usually because both people edited the same lines.
-
-Check which files have conflicts:
-
-```bash
-git status
-```
-
-Open each conflicted file. Git will mark the conflicting area like this:
+Install [uv](https://docs.astral.sh/uv/getting-started/installation/). From this repository's top folder, on macOS Terminal or Windows PowerShell:
 
 ```text
-<<<<<<< HEAD
-your version
-=======
-teammate's version
->>>>>>> incoming-commit
+uv sync --locked
+uv run streamlit run streamlit_app.py
 ```
 
-Decide what the final version should be, edit the file, and remove the
-`<<<<<<<`, `=======`, and `>>>>>>>` markers.
+Open the local address printed in the terminal. The first startup prepares the bundled sample. Stop with Ctrl+C. The original advanced entry point remains in `outreach-app/app.py`; use the root entry point above for the portable sample and public deployment.
 
-Then stage, commit, and push the resolved file:
+## Reproduce the validation
 
-```bash
-git add <filename>
-git commit -m "Resolve merge conflict"
-git push origin main
+From the repository root:
+
+```text
+uv run python scripts/validate_mvp.py
+uv run python scripts/check_case.py
+cd outreach-app
+uv run python -m pytest -q
 ```
 
-Do not leave conflict markers in the final file.
+The independent numerical audit writes `evidence/mvp-numbers.json`; the case check writes `cases/tinyu/calculation-evidence.json`. The test suite uses small exact fixtures and the bundled sample. The full-mode integration test is skipped unless a separately prepared full dataset is present; full mode is not the public deployment.
 
-#### 2. Push rejected because the remote branch has new commits
+## Team and individual case
 
-You may see an error such as `rejected`, `non-fast-forward`, or `fetch first`.
-This usually means a teammate pushed before you.
+- Tinyu Xie — [case PDF](cases/tinyu/tinyu-case-nora-pilot.pdf), [final memo](cases/tinyu/nora-pilot-final.md), and [verification notes](cases/tinyu/submission-check.md).
+- [Morgan / Pano version support](cases/submitted/leyna-pano-version-support.pdf) — Leyna.
+- [Alex / Navidrome version priority](cases/submitted/zhongze-navidrome-versions.pdf) — Zhongze.
+- [Ana / diagnostic review](cases/submitted/gigi-diagnostic-review.pdf) — Gigi.
+- [Rachel / unknown client eligibility](cases/submitted/rachel-unknown-client.pdf) — supplied case; author not labeled in the PDF.
 
-Pull the latest changes first:
-
-```bash
-git pull origin main
-```
-
-If Git merges automatically, push again:
-
-```bash
-git push origin main
-```
-
-If a merge conflict appears, resolve it using the steps in Scenario 1.
-
-#### 3. `git pull` is blocked because you have uncommitted changes
-
-Git may refuse to pull if your local edits would be overwritten.
-
-First check your changes:
-
-```bash
-git status
-```
-
-If the work is ready, commit it:
-
-```bash
-git add .
-git commit -m "Save work before pulling"
-git pull origin main
-```
-
-If the work is not ready to commit, temporarily save it with stash:
-
-```bash
-git stash
-git pull origin main
-git stash pop
-```
-
-If `git stash pop` creates a conflict, resolve it the same way as a normal
-merge conflict.
-
-#### 4. You accidentally staged a file
-
-To remove one file from the staging area without deleting your edits:
-
-```bash
-git restore --staged <filename>
-```
-
-To unstage everything:
-
-```bash
-git restore --staged .
-```
-
-#### 5. You changed a file but want to discard those local changes
-
-Use this only if you are sure you do not need the edits:
-
-```bash
-git restore <filename>
-```
-
-This replaces your local version with the last committed version.
-
-#### 6. You committed locally but have not pushed yet and want to change the commit message
-
-```bash
-git commit --amend -m "New commit message"
-```
-
-Then push normally:
-
-```bash
-git push origin main
-```
-
-#### 7. You are not sure what Git is doing
-
-Start with:
-
-```bash
-git status
-```
-
-`git status` usually tells you whether you are in the middle of a merge, have
-uncommitted changes, have conflicts, or have commits waiting to be pushed.
-
-### Recommended Team Workflow
-
-To reduce merge conflicts:
-
-1. Run `git pull origin main` before starting work.
-2. Avoid having multiple teammates edit the same file at the same time when possible.
-3. Make small commits with clear messages.
-4. Pull again before pushing.
-5. If Git reports a conflict, resolve it carefully instead of overwriting a teammate's work.
-6. Run `git status` before and after resolving a problem to confirm the repository is clean.
-
+The historical case records findings before the MVP fixes. The validation documents the subsequent fixes and their new live evidence. `change-requests.md` retains the original findings and resolution status. No outreach message is sent by this app.

@@ -1,2 +1,5 @@
 *.pdf binary
 *.jpg binary
+*.png binary
+.DS_Store export-ignore
+**/.DS_Store export-ignore
